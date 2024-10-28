@@ -1,0 +1,59 @@
+.movie-search {
+    max-width: 1000px; /* Adjust this value to match the desired header width */
+    margin: 0 auto; /* Center the container */
+    padding: 20px;
+  }
+  
+  .genre-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap into multiple rows */
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center; /* Center the buttons horizontally */
+  }
+  
+  .genre-button {
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1 1 200px; /* Make buttons flexible, with a minimum width of 200px */
+    max-width: 250px; /* Set a max width for the buttons */
+    text-align: center;
+  }
+  
+  .genre-button:hover {
+    background-color: #333;
+  }
+  
+  .genre-button.active {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+  }
+  
+  .movie-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Center movie posters */
+    margin-top: 20px;
+  }
+  
+  .movie-card {
+    width: 200px; /* Adjust this width as needed */
+    text-align: center;
+  }
+  
+  .movie-card img {
+    width: 100%;
+    border-radius: 8px;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .movie-card img:hover {
+    transform: scale(1.05);
+  }
+  

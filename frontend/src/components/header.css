@@ -1,0 +1,63 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(31, 31, 31, 0.8);
+    padding: 10px 20px; /* Adjust padding for better spacing */
+    color: white;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between; /* Space between title and nav */
+    align-items: center; /* Center items vertically */
+  }
+  
+  .header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  
+  .header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px; /* Space between nav items */
+    padding: 0;
+  }
+  
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px; /* Add some padding for better click area */
+    border-radius: 4px; /* Rounded corners */
+    transition: background-color 0.3s ease; /* Smooth background transition */
+  }
+  
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Change background on hover */
+  }
+  
+  .logout-button {
+    background-color: #ff5e57; /* Same as button in forms */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .logout-button:hover {
+    background-color: rgba(255, 94, 87, 0.8); /* Slightly darker on hover */
+  }
+  
+  .username {
+    margin-left: 15px; /* Space from the logout button */
+    font-weight: bold; /* Make username stand out */
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .header nav ul {
+      flex-direction: column; /* Stack items vertically on smaller screens */
+    }
+  }
+  
