@@ -1,10 +1,11 @@
+
 const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Ensure this is your actual database connection
 
 // Create a new review
 router.post('/', async (req, res) => {
-    const { user_id, movie_id, content, recommendation, movie_title, thumbnail } = req.body;
+    const { user_id, movie_id, content, recommendation, movie_title, thumbnail, logo } = req.body;
 
     console.log('Request Body:', req.body);
 
@@ -19,9 +20,9 @@ router.post('/', async (req, res) => {
 
         // If the movie does not exist, insert it into the movies table
         if (movieCheck.rows.length === 0) {
-            await db.query( // Changed from pool to db
-                'INSERT INTO movies (id, title, thumbnail) VALUES ($1, $2, $3)',
-                [movie_id, movie_title, thumbnail]
+            await db.query(
+                'INSERT INTO movies (id, title, thumbnail, logo) VALUES ($1, $2, $3, $4)',
+                [movie_id, movie_title, thumbnail, logo]
             );
         }
 
@@ -38,42 +39,42 @@ router.post('/', async (req, res) => {
     }
 });
 
-
-// Get reviews for a specific movie
+// Get reviews for a specific movie, including logo
 router.get('/:movie_id', async (req, res) => {
     const { movie_id } = req.params;
 
     try {
         const result = await db.query(`
-            SELECT r.id, r.user_id, r.content, r.created_at, r.recommendation, m.thumbnail, m.title AS movie_title
+            SELECT r.id, r.user_id, r.content, r.created_at, r.recommendation, m.thumbnail, m.title AS movie_title, m.logo
             FROM reviews r
             JOIN movies m ON r.movie_id = m.id 
             WHERE r.movie_id = $1
         `, [movie_id]);
 
-        res.json(result.rows); // Send back the reviews and thumbnails
+        res.json(result.rows); // Send back the reviews, including logo and thumbnail
     } catch (err) {
         console.error('Error fetching reviews:', err);
         res.status(500).json({ error: 'Failed to fetch reviews' });
     }
 });
 
-
-// Other routes remain unchanged...
-
-
-// Get all reviews
+// Get all reviews (with logo included)
 router.get('/', async (req, res) => {
     try {
-        const reviews = await db.query(
-            'SELECT r.*, u.username, m.thumbnail, m.title FROM reviews r JOIN users u ON r.user_id = u.id JOIN movies m ON r.movie_id = m.id ORDER BY r.created_at DESC'
-        );
+        const reviews = await db.query(`
+            SELECT r.*, u.username, m.thumbnail, m.title, m.logo 
+            FROM reviews r
+            JOIN users u ON r.user_id = u.id 
+            JOIN movies m ON r.movie_id = m.id 
+            ORDER BY r.created_at DESC
+        `);
         res.status(200).json(reviews.rows);
     } catch (error) {
         console.error('Error fetching all reviews:', error);
         res.status(500).json({ error: 'Failed to fetch reviews' });
     }
 });
+
 
 // Like a review
 // Like a review

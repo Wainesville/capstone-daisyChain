@@ -35,37 +35,40 @@ const MovieDetail = () => {
         e.preventDefault();
         if (!movie) {
             console.error('No movie data available');
-            return; // Prevent submission if movie is not set
+            return;
         }
-
+    
         try {
             const response = await axios.post('http://localhost:5000/api/reviews', {
                 user_id: localStorage.getItem('user_id'),
                 movie_id: movieId,
                 content: comment,
                 recommendation: recommendation,
-                movie_title: movie.title,          // Include movie title
-                thumbnail: movie.thumbnail          // Include movie thumbnail
+                movie_title: movie.title,
+                thumbnail: movie.thumbnail,
+                logo: movie.logo  // Ensure logo is included here
             });
+    
             setReviews([...reviews, response.data]);
             setComment('');
-
-            // Navigate to the homepage after submitting the review
             navigate('/');  // Redirect to the homepage
         } catch (err) {
             console.error('Failed to submit comment', err);
         }
     };
+    
 
     return (
         <div className="movie-detail">
             <h2>Movie Reviews</h2>
             {movie && (
-                <div className="movie-info">
-                    <img src={movie.thumbnail} alt={`${movie.title} thumbnail`} />
-                    <h3>{movie.title}</h3>
-                </div>
-            )}
+            <div className="movie-info">
+                <img src={movie.thumbnail} alt={`${movie.title} thumbnail`} />
+                <h3>{movie.title}</h3>
+                {movie.logo && <img src={movie.logo} alt={`${movie.title} logo`} className="movie-logo" />}
+            </div>
+)}
+
             <form onSubmit={handleCommentSubmit}>
                 <textarea
                     value={comment}

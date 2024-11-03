@@ -1,81 +1,106 @@
 .homepage {
-    padding: 20px;
-  }
-  
-  .reviews {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Space between reviews */
-  }
-  
-  .review-box {
-    display: flex; /* Flexbox to align poster and text */
-    align-items: flex-start; /* Align items at the top */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    gap: 15px; /* Space between image and text */
-  }
+  padding: 20px;
+}
 
-  .movie-poster {
-    width: 100px;
-    flex: 0 0 auto; /* Prevent flexbox from growing or shrinking */
-  }
+.reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-  .movie-thumbnail {
-    width: 100px; /* Fixed width for the poster */
-    height: auto; /* Scale height automatically */
-  }
-  
-  .review-header {
-    display: flex;
-    justify-content: space-between; /* Space between username and timestamp */
-  }
-  
-  .review-text {
-    flex: 1; /* Allow text to grow and fill space */
-  }
+.review-box {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  gap: 15px;
+  align-items: flex-start;
+}
 
-  .review-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px; /* Space above the footer */
-  }
-  
-  .comments-section {
-    margin-top: 15px; /* Space between review and comments */
-  }
-  .username {
-    font-weight: bold; /* Bold username */
-  }
-  
-  .timestamp {
-    font-size: 0.9em; /* Smaller font for timestamp */
-    color: #888; /* Lighter color for timestamp */
-  }
-  
-  .review-content {
-    margin: 15px 0; /* Space around the review content */
-    text-align: center; /* Center the review */
-    font-style: italic; /* Italicize the review text */
-  }
-  
-  .review-footer {
-    display: flex;
-    justify-content: flex-end; /* Align the button to the right */
-  }
-  
-  button {
-    background-color: #007bff; /* Bootstrap primary color */
-    color: white; /* White text */
-    border: none;
-    border-radius: 4px; /* Rounded button */
-    padding: 8px 12px; /* Button padding */
-    cursor: pointer; /* Pointer on hover */
-  }
-  
-  button:hover {
-    background-color: #0056b3; /* Darker shade on hover */
-  }
-  
+.movie-poster {
+  width: 100px;
+  text-align: center;
+}
+
+.movie-thumbnail {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.movie-logo {
+  width: 80px;
+  height: auto;
+  margin-top: 8px;
+}
+
+.movie-title {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: #555;
+  font-weight: bold;
+}
+
+.review-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 1em;
+  color: #333;
+}
+
+.timestamp {
+  font-size: 0.8em;
+  color: #888;
+}
+
+.review-quote-container {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.review-quote {
+  font-size: 1.2em;
+  font-style: italic;
+  color: #444;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
