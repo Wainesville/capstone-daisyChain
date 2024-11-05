@@ -25,7 +25,6 @@ export const fetchGenres = async () => {
     }
 };
 
-// Fetch Movie Info
 // Fetch Movie Info (with credits for director and actors)
 export const fetchMovieInfo = async (movieId) => {
     try {
@@ -37,152 +36,39 @@ export const fetchMovieInfo = async (movieId) => {
         });
         return response.data; // Return detailed movie info with credits
     } catch (error) {
-        console.error('Error fetching movie info:', error);
+        console.error('Error fetching movie info:', error.response ? error.response.data : error.message);
         return null; // Return null if there's an error
     }
 };
 
-
-
-
-// Fetch Movie Videos
-export const fetchMovieVideos = async (movieId) => {
+// Fetch Movie Reviews
+export const fetchMovieReviews = async (movieId) => {
     try {
-        const response = await axios.get(`${BASE_URL}/movie/${movieId}/videos`, {
-            params: {
-                api_key: API_KEY,
-            },
-        });
-        return response.data.results; // Return the list of video results (trailers, etc.)
+        const response = await axios.get(`${API_SERVER_URL}/reviews/${movieId}`);
+        return response.data; // Return the list of reviews for the movie
     } catch (error) {
-        console.error('Error fetching movie videos:', error);
+        console.error('Error fetching movie reviews:', error.response ? error.response.data : error.message);
         return []; // Return an empty array if there's an error
     }
 };
 
-// Fetch Movie Images
-export const fetchMovieImages = async (movieId) => {
-    try {
-        const response = await axios.get(`${BASE_URL}/movie/${movieId}/images`, {
-            params: {
-                api_key: API_KEY,
-            },
-        });
-        return response.data; // Return the list of images for the movie
-    } catch (error) {
-        console.error('Error fetching movie images:', error);
-        return []; // Return an empty array if there's an error
-    }
-};
-
-// Fetch Trending Movies (with pagination)
-export const fetchTrendingMovies = async (page = 1) => {
-    try {
-        const response = await axios.get(`${BASE_URL}/trending/movie/day`, {
-            params: {
-                api_key: API_KEY,
-                page, // Pass the page number
-            },
-        });
-
-        // Fetch the next page to get more results
-        const secondPageResponse = await axios.get(`${BASE_URL}/trending/movie/day`, {
-            params: {
-                api_key: API_KEY,
-                page: page + 1, // Fetch the next page
-            },
-        });
-
-        // Combine both pages and deduplicate results
-        const combinedResults = [
-            ...response.data.results,
-            ...secondPageResponse.data.results,
-        ];
-
-        return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
-    } catch (error) {
-        console.error('Error fetching trending movies:', error);
-        return [];
-    }
-};
-
-// Fetch Upcoming Movies (with pagination)
-export const fetchUpcomingMovies = async (page = 1) => {
-    try {
-        const response = await axios.get(`${BASE_URL}/movie/upcoming`, {
-            params: {
-                api_key: API_KEY,
-                page, // Pass the page number
-            },
-        });
-
-        // Fetch the next page to get more results
-        const secondPageResponse = await axios.get(`${BASE_URL}/movie/upcoming`, {
-            params: {
-                api_key: API_KEY,
-                page: page + 1, // Fetch the next page
-            },
-        });
-
-        // Combine both pages and deduplicate results
-        const combinedResults = [
-            ...response.data.results,
-            ...secondPageResponse.data.results,
-        ];
-
-        return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
-    } catch (error) {
-        console.error('Error fetching upcoming movies:', error);
-        return [];
-    }
-};
-
-// Fetch Movies by Genre (with pagination)
-export const fetchMoviesByGenre = async (genreId, page = 1) => {
-    try {
-        const response = await axios.get(`${BASE_URL}/discover/movie`, {
-            params: {
-                api_key: API_KEY,
-                with_genres: genreId,
-                sort_by: 'popularity.desc', // Sort by popularity
-                page, // Pass the page number
-            },
-        });
-
-        // Fetch the next page to get more results
-        const secondPageResponse = await axios.get(`${BASE_URL}/discover/movie`, {
-            params: {
-                api_key: API_KEY,
-                with_genres: genreId,
-                sort_by: 'popularity.desc',
-                page: page + 1, // Fetch the next page
-            },
-        });
-
-        // Combine both pages and return the first 24 results
-        const combinedResults = [
-            ...response.data.results,
-            ...secondPageResponse.data.results,
-        ];
-
-        return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
-    } catch (error) {
-        console.error('Error fetching movies by genre:', error);
-        return [];
-    }
-};
-
-// Fetch Watchlist (pagination not needed here as we're fetching from the server)
+// Fetch Watchlist
 export const fetchWatchlist = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error('No token found! Please log in.');
+        return [];
+    }
+
     try {
         const response = await axios.get(`${API_SERVER_URL}/watchlist`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${token}`,
             },
         });
         return response.data;
     } catch (error) {
-        console.error('Error fetching watchlist:', error);
+        console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
         return [];
     }
 };
@@ -227,8 +113,135 @@ export const removeFromWatchlist = async (movieId) => {
         });
         return true;
     } catch (error) {
-        console.error('Error removing from watchlist:', error);
+        console.error('Error removing from watchlist:', error.response ? error.response.data : error.message);
         return false;
+    }
+};
+
+// Fetch Movie Videos
+export const fetchMovieVideos = async (movieId) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/movie/${movieId}/videos`, {
+            params: {
+                api_key: API_KEY,
+            },
+        });
+        return response.data.results; // Return the list of video results (trailers, etc.)
+    } catch (error) {
+        console.error('Error fetching movie videos:', error.response ? error.response.data : error.message);
+        return []; // Return an empty array if there's an error
+    }
+};
+
+// Fetch Movie Images
+export const fetchMovieImages = async (movieId) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/movie/${movieId}/images`, {
+            params: {
+                api_key: API_KEY,
+            },
+        });
+        return response.data; // Return the list of images for the movie
+    } catch (error) {
+        console.error('Error fetching movie images:', error.response ? error.response.data : error.message);
+        return []; // Return an empty array if there's an error
+    }
+};
+
+// Fetch Trending Movies (with pagination)
+export const fetchTrendingMovies = async (page = 1) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/trending/movie/day`, {
+            params: {
+                api_key: API_KEY,
+                page, // Pass the page number
+            },
+        });
+
+        // Fetch the next page to get more results
+        const secondPageResponse = await axios.get(`${BASE_URL}/trending/movie/day`, {
+            params: {
+                api_key: API_KEY,
+                page: page + 1, // Fetch the next page
+            },
+        });
+
+        // Combine both pages and deduplicate results
+        const combinedResults = [
+            ...response.data.results,
+            ...secondPageResponse.data.results,
+        ];
+
+        return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
+    } catch (error) {
+        console.error('Error fetching trending movies:', error.response ? error.response.data : error.message);
+        return [];
+    }
+};
+
+// Fetch Upcoming Movies (with pagination)
+export const fetchUpcomingMovies = async (page = 1) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/movie/upcoming`, {
+            params: {
+                api_key: API_KEY,
+                page, // Pass the page number
+            },
+        });
+
+        // Fetch the next page to get more results
+        const secondPageResponse = await axios.get(`${BASE_URL}/movie/upcoming`, {
+            params: {
+                api_key: API_KEY,
+                page: page + 1, // Fetch the next page
+            },
+        });
+
+        // Combine both pages and deduplicate results
+        const combinedResults = [
+            ...response.data.results,
+            ...secondPageResponse.data.results,
+        ];
+
+        return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
+    } catch (error) {
+        console.error('Error fetching upcoming movies:', error.response ? error.response.data : error.message);
+        return [];
+    }
+};
+
+// Fetch Movies by Genre (with pagination)
+export const fetchMoviesByGenre = async (genreId, page = 1) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/discover/movie`, {
+            params: {
+                api_key: API_KEY,
+                with_genres: genreId,
+                sort_by: 'popularity.desc', // Sort by popularity
+                page, // Pass the page number
+            },
+        });
+
+        // Fetch the next page to get more results
+        const secondPageResponse = await axios.get(`${BASE_URL}/discover/movie`, {
+            params: {
+                api_key: API_KEY,
+                with_genres: genreId,
+                sort_by: 'popularity.desc',
+                page: page + 1, // Fetch the next page
+            },
+        });
+
+        // Combine both pages and return the first 24 results
+        const combinedResults = [
+            ...response.data.results,
+            ...secondPageResponse.data.results,
+        ];
+
+        return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
+    } catch (error) {
+        console.error('Error fetching movies by genre:', error.response ? error.response.data : error.message);
+        return [];
     }
 };
 
@@ -243,7 +256,7 @@ export const searchMovies = async (query) => {
         });
         return response.data.results;
     } catch (error) {
-        console.error('Error searching movies:', error);
+        console.error('Error searching movies:', error.response ? error.response.data : error.message);
         return [];
     }
 };
@@ -252,14 +265,9 @@ export const searchMovies = async (query) => {
 export const loginUser = async (credentials) => {
     try {
         const response = await axios.post(`${API_SERVER_URL}/auth/login`, credentials);
-        
-        // Log the response to verify what you are receiving
-        console.log('Login Response:', response);
-    
         localStorage.setItem('token', response.data.token); // Store token in local storage
         return response.data;
     } catch (error) {
-        // Log error for debugging
         console.error('Error logging in:', error.response ? error.response.data : error.message);
         throw error;
     }
@@ -271,9 +279,7 @@ export const registerUser = async (userData) => {
         const response = await axios.post(`${API_SERVER_URL}/auth/register`, userData);
         return response.data;
     } catch (error) {
-        console.error('Error registering:', error);
+        console.error('Error registering:', error.response ? error.response.data : error.message);
         throw error;
     }
 };
-
-

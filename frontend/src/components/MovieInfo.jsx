@@ -7,8 +7,10 @@ import {
     fetchMovieVideos,
     fetchWatchlist,
     fetchMovieImages,
+    fetchMovieReviews,
 } from '../api';
 import './MOvieInfo.css';
+import axios from 'axios'; // Ensure axios is imported
 
 function MovieInfo() {
     const { id } = useParams();
@@ -18,6 +20,11 @@ function MovieInfo() {
     const [inWatchlist, setInWatchlist] = useState(false);
     const [error, setError] = useState(null);
     const [backdropImage, setBackdropImage] = useState('');
+    const [reviews, setReviews] = useState([]);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [comment, setComment] = useState('');
+    const [recommendation, setRecommendation] = useState(null);
+    const [rating, setRating] = useState(5);
 
     useEffect(() => {
         const loadMovieInfo = async () => {
@@ -40,7 +47,11 @@ function MovieInfo() {
                 const watchlist = await fetchWatchlist();
                 const isInWatchlist = watchlist.some((movie) => movie.movie_id === id);
                 setInWatchlist(isInWatchlist);
+
+                const reviewsData = await fetchMovieReviews(id);
+                setReviews(reviewsData);
             } catch (err) {
+                console.error('Failed to load movie information:', err.response ? err.response.data : err.message);
                 setError('Failed to load movie information.');
             }
         };
@@ -49,28 +60,70 @@ function MovieInfo() {
 
     const handleWatchlistToggle = async () => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must be logged in to modify your watchlist.');
+                return;
+            }
+
             if (inWatchlist) {
-                await removeFromWatchlist(id);
+                await axios.delete(`http://localhost:5000/api/watchlist/remove/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
                 setInWatchlist(false);
                 alert('Movie removed from watchlist!');
             } else {
-                await addToWatchlist(movie.id, movie.title, movie.poster_path);
+                await axios.post('http://localhost:5000/api/watchlist/add', {
+                    movieId: movie.id,
+                    title: movie.title,
+                    poster: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
                 setInWatchlist(true);
                 alert('Movie added to watchlist!');
             }
         } catch (error) {
+            console.error('Failed to modify watchlist:', error);
             alert('You must be logged in to modify your watchlist.');
         }
     };
 
     const handleReviewMovie = () => {
-        if (!movie) return; // Ensure movie details are available
-        localStorage.setItem('reviewMovie', JSON.stringify({
-            id: movie.id,
-            title: movie.title,
-            thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
-        }));
-        navigate(`/movie-detail/${movie.id}`);
+        setShowReviewForm(!showReviewForm);
+    };
+
+    const handleCommentSubmit = async (e) => {
+        e.preventDefault();
+        if (!movie) {
+            console.error('No movie data available');
+            return;
+        }
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/reviews', {
+                user_id: localStorage.getItem('user_id'),
+                movie_id: id,
+                content: comment,
+                recommendation,
+                rating,
+                movie_title: movie.title,
+                thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                logo: movie.logo,
+            });
+
+            setReviews([...reviews, response.data]);
+            setComment('');
+            setRecommendation(null);
+            setRating(5);
+            navigate('/'); // Redirect to homepage after submitting
+        } catch (err) {
+            console.error('Failed to submit comment', err.response ? err.response.data : err.message);
+        }
     };
 
     if (error) return <div>{error}</div>;
@@ -125,18 +178,63 @@ function MovieInfo() {
                     {inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                 </button>
                 <button onClick={handleReviewMovie} className="review-movie-button">
-                    Review Movie
+                    {showReviewForm ? 'Cancel Review' : 'Write a Review'}
                 </button>
             </div>
 
-            <div className="director-actors">
-                <h4 className="director">Director: {director ? director.name : 'N/A'}</h4>
-                <h4 className="actors-title">Top 5 Actors:</h4>
-                <ul className="actors-list">
-                    {topActors.map((actor) => (
-                        <li key={actor.id} className="actor-name">{actor.name}</li>
-                    ))}
-                </ul>
+            {showReviewForm && (
+                <form onSubmit={handleCommentSubmit} className="comment-form">
+                    <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Leave a comment/review"
+                        required
+                    />
+                    <div className="recommendation-buttons">
+                        <button
+                            type="button"
+                            onClick={() => setRecommendation(true)}
+                            className={`thumb-button ${recommendation === true ? 'active' : ''}`}
+                        >
+                            👍
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setRecommendation(false)}
+                            className={`thumb-button ${recommendation === false ? 'active' : ''}`}
+                        >
+                            👎
+                        </button>
+                    </div>
+                    <div className="rating-slider">
+                        <label htmlFor="rating">Rating: {rating}</label>
+                        <input
+                            type="range"
+                            id="rating"
+                            min="1"
+                            max="10"
+                            value={rating}
+                            onChange={(e) => setRating(Number(e.target.value))}
+                        />
+                    </div>
+                    <button type="submit">Post Review</button>
+                </form>
+            )}
+
+            <div className="reviews">
+                <h3>Reviews:</h3>
+                {reviews.map((review) => (
+                    <div key={review.id} className="review">
+                        <div className="review-header">
+                            <img src={review.thumbnail} alt={`${review.movie_title} thumbnail`} className="review-thumbnail" />
+                            <p><strong>{review.username}</strong> says:</p>
+                        </div>
+                        <p>{review.content}</p>
+                        <p>Recommendation: {review.recommendation ? '👍' : '👎'}</p>
+                        <p>Rating: {review.rating}/10</p>
+                        <hr />
+                    </div>
+                ))}
             </div>
         </div>
     );

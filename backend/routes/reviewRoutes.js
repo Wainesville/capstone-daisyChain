@@ -1,11 +1,10 @@
-
 const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Ensure this is your actual database connection
 
 // Create a new review
 router.post('/', async (req, res) => {
-    const { user_id, movie_id, content, recommendation, movie_title, thumbnail, logo } = req.body;
+    const { user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo } = req.body;
 
     console.log('Request Body:', req.body);
 
@@ -28,8 +27,8 @@ router.post('/', async (req, res) => {
 
         // Proceed to insert the review
         const newReview = await db.query(
-            'INSERT INTO reviews (user_id, movie_id, content, recommendation) VALUES ($1, $2, $3, $4) RETURNING *',
-            [user_id, movie_id, content, recommendation]
+            'INSERT INTO reviews (user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo]
         );
 
         res.status(201).json(newReview.rows[0]);
@@ -45,7 +44,7 @@ router.get('/:movie_id', async (req, res) => {
 
     try {
         const result = await db.query(`
-            SELECT r.id, r.user_id, r.content, r.created_at, r.recommendation, m.thumbnail, m.title AS movie_title, m.logo
+            SELECT r.id, r.user_id, r.content, r.created_at, r.recommendation, r.movie_title, r.thumbnail, r.rating, r.logo, m.thumbnail AS movie_thumbnail, m.title AS movie_title, m.logo AS movie_logo
             FROM reviews r
             JOIN movies m ON r.movie_id = m.id 
             WHERE r.movie_id = $1
@@ -75,8 +74,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-
-// Like a review
 // Like a review
 router.post('/:review_id/like', async (req, res) => {
     const { user_id } = req.body; // Get the user ID from the request body
@@ -106,8 +103,6 @@ router.post('/:review_id/like', async (req, res) => {
     }
 });
 
-
-
 // Unlike a review
 router.delete('/:review_id/like', async (req, res) => {
     const { user_id } = req.body; // Get the user ID from the request body
@@ -132,7 +127,6 @@ router.delete('/:review_id/like', async (req, res) => {
         res.status(500).json({ error: 'Failed to unlike review' });
     }
 });
-
 
 // Get likes count for a review
 router.get('/:review_id/likes', async (req, res) => {

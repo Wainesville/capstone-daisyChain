@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchGenres, fetchMoviesByGenre, searchMovies } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './browse.css';
 
 const ITEMS_PER_PAGE = 24;
@@ -24,6 +24,8 @@ function Browse() {
 
   const handleGenreClick = async (genreId) => {
     setSelectedGenre(genreId);
+    setSearchResults([]); // Clear search results when a genre is selected
+    setSearchTerm(''); // Clear search term when a genre is selected
     setCurrentPage(1); // Reset to page 1 when a new genre is selected
     await loadMoviesByGenre(genreId, 1); // Load movies for the first page
   };
@@ -84,10 +86,12 @@ function Browse() {
           <div className="movie-grid">
             {searchResults.map((movie) => (
               <div key={movie.id} className="movie-card">
-                <img
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                  alt={movie.title}
-                />
+                <Link to={`/movie/${movie.id}`}>
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    alt={movie.title}
+                  />
+                </Link>
                 <h3>{movie.title}</h3>
               </div>
             ))}
@@ -100,15 +104,13 @@ function Browse() {
           <h2>Movies in {genres.find((g) => g.id === parseInt(selectedGenre))?.name}</h2>
           <div className="movie-grid">
             {genreMovies.map((movie) => (
-              <div
-                key={movie.id}
-                className="movie-card"
-                onClick={() => navigate(`/movie/${movie.id}`)}
-              >
-                <img
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                  alt={movie.title}
-                />
+              <div key={movie.id} className="movie-card">
+                <Link to={`/movie/${movie.id}`}>
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    alt={movie.title}
+                  />
+                </Link>
                 <h3>{movie.title}</h3>
               </div>
             ))}

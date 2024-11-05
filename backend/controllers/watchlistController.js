@@ -31,6 +31,17 @@ const addToWatchlist = async (req, res) => {
     }
   
     try {
+      // Check if the movie exists in the movies table
+      const movieCheck = await pool.query('SELECT * FROM movies WHERE id = $1', [movieId]);
+  
+      // If the movie does not exist, insert it into the movies table
+      if (movieCheck.rows.length === 0) {
+        await pool.query(
+          'INSERT INTO movies (id, title, thumbnail) VALUES ($1, $2, $3)',
+          [movieId, title, poster]
+        );
+      }
+  
       const existingMovie = await pool.query('SELECT * FROM watchlist WHERE user_id = $1 AND movie_id = $2', [userId, movieId]);
       if (existingMovie.rows.length > 0) {
         return res.status(400).json({ error: 'Movie is already in watchlist' });

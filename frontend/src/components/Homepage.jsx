@@ -100,27 +100,43 @@ const Homepage = () => {
       <div className="reviews">
         {reviews.length > 0 ? (
           reviews.map((review) => (
-            <div key={review.id} className="review-box">
-              <div className="review-content">
-                <div className="movie-poster">
-                  <Link to={`/movie/${review.movie_id}`}>
-                    <img src={review.thumbnail} alt={review.movie_title} className="movie-thumbnail" />
-                  </Link>
-                  <div className="review-quote-container">
-                    <blockquote className="review-quote">"{review.content}"</blockquote>
-                  </div>
-                  {review.logo && (
-                    <img src={review.logo} alt={`${review.movie_title} Logo`} className="movie-logo" />
-                  )}
+            <div key={review.id} className="review-card">
+              <div className="review-content-wrapper">
+                <div className="movie-title">{review.movie_title}</div>
+                <div className="review-content">
+                  <p><strong>{review.username} says:</strong></p>
+                  <p>"{review.content}"</p>
+                  <p><strong>Recommendation:</strong> {review.recommendation ? '👍' : '👎'}</p>
+                  <p><strong>Rating:</strong> {review.rating}/10</p>
                 </div>
-                
-                <div className="review-text">
-                  <div className="review-header">
-                    <span className="username">{review.username}</span>
-                    <span className="timestamp">{new Date(review.created_at).toLocaleString()}</span>
+                <div className="review-interactions">
+                  <div className="comments-section">
+                    <h4>Comments:</h4>
+                    {comments[review.id]?.map((comment) => (
+                      <div key={comment.id} className="comment">
+                        <p>
+                          <strong>{comment.username}</strong>: {comment.content}
+                        </p>
+                      </div>
+                    ))}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleCommentSubmit(review.id);
+                      }}
+                    >
+                      <input
+                        type="text"
+                        value={newComment[review.id] || ''}
+                        onChange={(e) =>
+                          setNewComment(prev => ({ ...prev, [review.id]: e.target.value }))
+                        }
+                        placeholder="Write a comment..."
+                      />
+                      <button type="submit">Post Comment</button>
+                    </form>
                   </div>
-                 
-                  <div className="review-footer">
+                  <div className="like-section">
                     <button onClick={() => handleLikeToggle(review.id)}>
                       {likedReviews.has(review.id) ? 'Unlike' : 'Like'}
                     </button>
@@ -128,33 +144,9 @@ const Homepage = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="comments-section">
-                <h4>Comments:</h4>
-                {comments[review.id]?.map((comment) => (
-                  <div key={comment.id} className="comment">
-                    <p>
-                      <strong>{comment.username}</strong>: {comment.content}
-                    </p>
-                  </div>
-                ))}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleCommentSubmit(review.id);
-                  }}
-                >
-                  <input
-                    type="text"
-                    value={newComment[review.id] || ''}
-                    onChange={(e) =>
-                      setNewComment(prev => ({ ...prev, [review.id]: e.target.value }))
-                    }
-                    placeholder="Write a comment..."
-                  />
-                  <button type="submit">Post Comment</button>
-                </form>
-              </div>
+              <Link to={`/movie/${review.movie_id}`}>
+                <img src={review.thumbnail} alt={review.movie_title} className="movie-thumbnail" onError={(e) => console.error('Image load error:', e)} />
+              </Link>
             </div>
           ))
         ) : (

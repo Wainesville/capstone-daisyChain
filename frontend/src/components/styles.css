@@ -6,6 +6,13 @@
   font-family: 'Poppins', sans-serif;
 }
 
+/* General Background and Font Color */
+body {
+  background-color: black;
+  color: white;
+  padding-top: 80px; /* Add padding to the top to account for the fixed header */
+}
+
 /* Header Styles */
 .header {
   position: fixed;
@@ -24,13 +31,6 @@
   font-size: 24px;
 }
 
-.movie-logo {
-  width: 80px;
-  height: auto;
-  margin-top: 8px;
-}
-
-
 .header nav ul {
   list-style: none;
   display: flex;
@@ -40,28 +40,39 @@
 
 /* Form Container */
 .form-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* Center the form on both X and Y axes */
-  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
   padding: 30px;
   border-radius: 8px;
   width: 300px;
-  z-index: 1; /* Ensure it's on top of the collage */
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
+  color: black; /* Ensure text inside form container is black */
+  margin: 0 auto; /* Center horizontally */
+  position: relative;
+  z-index: 3; /* Ensure the form is on top of the background */
+}
+
+/* Centering the Form on the Page */
+.centered-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
 }
 
 /* CSS for body-content */
 .body-content {
-  margin-top: 100px; /* Adjust based on your header height */
+  margin-top: 100px;
   display: flex;
-  flex-direction: column; /* Ensure items stack vertically */
-  align-items: center; /* Center the content horizontally */
-  justify-content: flex-start; /* Start from the top */
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   position: relative;
-  z-index: 1; /* Keep it above the collage if needed */
+  z-index: 1;
 }
 
 /* Movie Collage Background */
@@ -72,8 +83,8 @@
   width: 100vw;
   height: 100vh;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); /* Adjusted min size */
-  gap: 0; /* Adjust as needed */
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 0;
   z-index: 0;
   overflow: hidden;
 }
@@ -82,16 +93,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-/* Form Container Styling */
-.register-page,
-.login-page {
-  position: relative;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Button and Input Styles */

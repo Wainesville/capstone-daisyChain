@@ -3,32 +3,31 @@
 /* General Styles */
 .browse-page {
     padding: 20px;
-    background-color: #f9f9f9; /* Light background for contrast */
+    background-color: black; /* Set background to black */
+    color: white; /* Set text color to white */
     min-height: 100vh; /* Ensure it fills the viewport */
 }
 
 h2 {
     text-align: center;
-    color: #333; /* Darker color for headings */
+    margin-bottom: 20px;
 }
 
-/* Genre Button Styles */
 .browse-container {
     display: flex;
     justify-content: center;
-    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
 .genre-button {
-    background-color: #ff5e57; /* Primary button color */
+    background-color: #ff5e57;
     color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
-    margin: 5px;
     cursor: pointer;
-    font-size: 1rem;
     transition: background-color 0.3s ease;
 }
 
@@ -36,22 +35,17 @@ h2 {
     background-color: #ff4a3d; /* Darker shade on hover */
 }
 
-/* Movie Grid Styles */
 .movie-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive grid */
-    gap: 15px; /* Space between movie cards */
-    margin: 0 auto; /* Center the grid */
-    max-width: 1200px; /* Limit max width for better readability */
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+    gap: 20px; /* Space between items */
 }
 
 .movie-card {
-    background-color: white;
-    border-radius: 8px;
+    background-color: #222;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.3s ease;
 }
 
 .movie-card:hover {
@@ -95,5 +89,5 @@ h2 {
 
 .pagination span {
     font-size: 1.2rem;
-    color: #333;
+    color: white; /* Ensure pagination text color is white */
 }
