@@ -12,11 +12,12 @@ const MovieCollage = () => {
     const fetchRandomMovies = async () => {
       let allMovies = [];
       let totalPosters = 0;
+      let page = 1;
 
-      while (totalPosters < 27) {
+      while (totalPosters < 24) {
         try {
           const response = await axios.get(`${BASE_URL}/trending/movie/week`, {
-            params: { api_key: API_KEY },
+            params: { api_key: API_KEY, page },
           });
 
           // Add movies with a poster_path to the allMovies array
@@ -26,13 +27,16 @@ const MovieCollage = () => {
           const posters = allMovies.filter(movie => movie.poster_path);
           totalPosters = posters.length; // Update totalPosters count
 
-          // If we have 27 or more, deduplicate and slice to keep only the first 27
-          if (totalPosters >= 27) {
+          // If we have 24 or more, deduplicate and slice to keep only the first 24
+          if (totalPosters >= 24) {
             // Deduplicate by id
             const uniquePosters = Array.from(new Map(posters.map(movie => [movie.id, movie])).values());
-            setMovies(uniquePosters.slice(0, 27)); // Set the unique posters
+            setMovies(uniquePosters.slice(0, 24)); // Set the unique posters
             return; // Exit once we have enough posters
           }
+
+          // Increment the page number for the next API call
+          page += 1;
         } catch (error) {
           console.error('Error fetching movies:', error);
           break; // Exit loop on error

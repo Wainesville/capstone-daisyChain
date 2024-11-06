@@ -11,6 +11,8 @@ import {
 } from '../api';
 import './MOvieInfo.css';
 import axios from 'axios'; // Ensure axios is imported
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function MovieInfo() {
     const { id } = useParams();
@@ -62,7 +64,7 @@ function MovieInfo() {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                alert('You must be logged in to modify your watchlist.');
+                toast.error('You must be logged in to modify your watchlist.');
                 return;
             }
 
@@ -73,7 +75,7 @@ function MovieInfo() {
                     },
                 });
                 setInWatchlist(false);
-                alert('Movie removed from watchlist!');
+                toast.success('Movie removed from watchlist!');
             } else {
                 await axios.post('http://localhost:5000/api/watchlist/add', {
                     movieId: movie.id,
@@ -85,11 +87,11 @@ function MovieInfo() {
                     },
                 });
                 setInWatchlist(true);
-                alert('Movie added to watchlist!');
+                toast.success('Movie added to watchlist!');
             }
         } catch (error) {
             console.error('Failed to modify watchlist:', error);
-            alert('You must be logged in to modify your watchlist.');
+            toast.error('Failed to modify watchlist.');
         }
     };
 
@@ -144,6 +146,18 @@ function MovieInfo() {
                 padding: '20px',
             }}
         >
+            <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                style={{ zIndex: 9999 }} // Ensure the ToastContainer is on top
+            />
             <div className="movie-header">
                 <h1 className="movie-title">{movie.title}</h1>
                 <img

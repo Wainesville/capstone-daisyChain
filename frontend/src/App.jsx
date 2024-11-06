@@ -10,27 +10,38 @@ import Watchlist from './components/Watchlists';
 import TrendingMovies from './components/TrendingMovies';
 import UpcomingMovies from './components/UpcomingMovies';
 import MovieDetail from './components/movieDetail'; // Import the new MovieDetail component
+import UserPage from './components/UserPage'; // Import the UserPage component
 
 import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
 
-  // Check for token in localStorage to set initial login state
+  // Check for token and username in localStorage to set initial login state
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const storedUsername = localStorage.getItem('username');
+    if (token && storedUsername) {
       setIsLoggedIn(true);
+      setUsername(storedUsername);
     }
   }, []);
 
   const handleLogin = (user) => {
     setIsLoggedIn(true);
+    setUsername(user.username);
+    localStorage.setItem('token', user.token);
+    localStorage.setItem('user_id', user.id);
+    localStorage.setItem('username', user.username);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setUsername('');
     localStorage.removeItem('token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('username');
   };
 
   const handleNewPost = (newPost) => {
@@ -40,7 +51,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+        <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} username={username} />
         <div className="body-content"> {/* Add this div to separate the header and body */}
           <Routes>
             {/* Default route - redirect to homepage if logged in */}
@@ -56,6 +67,7 @@ function App() {
             <Route path="/trending" element={isLoggedIn ? <TrendingMovies /> : <Navigate to="/login" />} />
             <Route path="/upcoming" element={isLoggedIn ? <UpcomingMovies /> : <Navigate to="/login" />} />
             <Route path="/movie-detail/:movieId" element={isLoggedIn ? <MovieDetail /> : <Navigate to="/login" />} />
+            <Route path="/user/:username" element={isLoggedIn ? <UserPage /> : <Navigate to="/login" />} />
           </Routes>
         </div>
       </div>

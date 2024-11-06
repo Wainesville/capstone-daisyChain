@@ -6,22 +6,22 @@
     background-color: black; /* Set background to black */
     color: white; /* Set text color to white */
     min-height: 100vh; /* Ensure it fills the viewport */
-}
-
-h2 {
+  }
+  
+  h2 {
     text-align: center;
     margin-bottom: 20px;
-}
-
-.browse-container {
+  }
+  
+  .browse-container {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
-}
-
-.genre-button {
+  }
+  
+  .genre-button {
     background-color: #ff5e57;
     color: white;
     border: none;
@@ -29,49 +29,49 @@ h2 {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-}
-
-.genre-button:hover {
+  }
+  
+  .genre-button:hover {
     background-color: #ff4a3d; /* Darker shade on hover */
-}
-
-.movie-grid {
+  }
+  
+  .movie-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4 columns */
     gap: 20px; /* Space between items */
-}
-
-.movie-card {
+  }
+  
+  .movie-card {
     background-color: #222;
     border-radius: 10px;
     overflow: hidden;
     transition: transform 0.3s ease;
-}
-
-.movie-card:hover {
+  }
+  
+  .movie-card:hover {
     transform: scale(1.05); /* Slight zoom on hover */
-}
-
-.movie-card img {
+  }
+  
+  .movie-card img {
     width: 100%;
     height: auto; /* Maintain aspect ratio */
-}
-
-.movie-card h3 {
+  }
+  
+  .movie-card h3 {
     text-align: center;
     padding: 10px 0;
     color: #555; /* Darker color for movie titles */
-}
-
-/* Pagination Styles */
-.pagination {
+  }
+  
+  /* Pagination Styles */
+  .pagination {
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 20px;
-}
-
-.pagination button {
+  }
+  
+  .pagination button {
     background-color: #ff5e57;
     color: white;
     border: none;
@@ -81,13 +81,105 @@ h2 {
     cursor: pointer;
     font-size: 1rem;
     transition: background-color 0.3s ease;
-}
-
-.pagination button:hover {
+  }
+  
+  .pagination button:hover {
     background-color: #ff4a3d; /* Darker shade on hover */
-}
-
-.pagination span {
+  }
+  
+  .pagination span {
     font-size: 1.2rem;
     color: white; /* Ensure pagination text color is white */
-}
+  }/* browse.css */
+
+/* General Styles */
+.browse-page {
+    padding: 20px;
+    background-color: black; /* Set background to black */
+    color: white; /* Set text color to white */
+    min-height: 100vh; /* Ensure it fills the viewport */
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .browse-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .genre-button {
+    background-color: #ff5e57;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .genre-button:hover {
+    background-color: #ff4a3d; /* Darker shade on hover */
+  }
+  
+  .movie-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+    gap: 20px; /* Space between items */
+  }
+  
+  .movie-card {
+    background-color: #222;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+  
+  .movie-card:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+  }
+  
+  .movie-card img {
+    width: 100%;
+    height: auto; /* Maintain aspect ratio */
+  }
+  
+  .movie-card h3 {
+    text-align: center;
+    padding: 10px 0;
+    color: #ffffff; /* Darker color for movie titles */
+  }
+  
+  /* Pagination Styles */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    background-color: #ff5e57;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    margin: 0 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .pagination button:hover {
+    background-color: #ff4a3d; /* Darker shade on hover */
+  }
+  
+  .pagination span {
+    font-size: 1.2rem;
+    color: white; /* Ensure pagination text color is white */
+  }

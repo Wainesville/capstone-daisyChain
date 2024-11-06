@@ -68,7 +68,15 @@ export const fetchWatchlist = async () => {
         });
         return response.data;
     } catch (error) {
-        console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
+        if (error.response && error.response.status === 401) {
+            console.error('Unauthorized: Invalid or expired token. Please log in again.');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            window.location.href = '/login'; // Redirect to login page
+        } else {
+            console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
+        }
         return [];
     }
 };
@@ -96,6 +104,10 @@ export const addToWatchlist = async (movieId, title, poster) => {
     } catch (error) {
         if (error.response && error.response.status === 401) {
             console.error('Unauthorized: Invalid or expired token. Please log in again.');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            window.location.href = '/login'; // Redirect to login page
         } else {
             console.error('Error adding to watchlist:', error.response ? error.response.data : error.message);
         }
@@ -113,7 +125,15 @@ export const removeFromWatchlist = async (movieId) => {
         });
         return true;
     } catch (error) {
-        console.error('Error removing from watchlist:', error.response ? error.response.data : error.message);
+        if (error.response && error.response.status === 401) {
+            console.error('Unauthorized: Invalid or expired token. Please log in again.');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            window.location.href = '/login'; // Redirect to login page
+        } else {
+            console.error('Error removing from watchlist:', error.response ? error.response.data : error.message);
+        }
         return false;
     }
 };
@@ -282,4 +302,28 @@ export const registerUser = async (userData) => {
         console.error('Error registering:', error.response ? error.response.data : error.message);
         throw error;
     }
+};
+
+// Fetch User Data
+export const fetchUserData = async (username) => {
+    const response = await axios.get(`${API_SERVER_URL}/users/${username}`);
+    return response.data;
+};
+
+// Fetch Watchlist by User ID
+export const fetchWatchlistByUserId = async (userId) => {
+    const response = await axios.get(`${API_SERVER_URL}/watchlist/${userId}`);
+    return response.data;
+};
+
+// Fetch User Reviews
+export const fetchUserReviews = async (userId) => {
+    const response = await axios.get(`${API_SERVER_URL}/reviews/user/${userId}`);
+    return response.data;
+};
+
+// Fetch Recommendations
+export const fetchRecommendations = async () => {
+    const response = await axios.get(`${API_SERVER_URL}/recommendations`);
+    return response.data;
 };
