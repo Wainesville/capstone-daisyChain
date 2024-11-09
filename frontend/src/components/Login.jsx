@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { loginUser } from '../api'; // Use the loginUser function from the API
 import './styles.css';
 import MovieCollage from './MovieCollage';
 
@@ -13,13 +13,9 @@ function Login({ handleLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-      const { token, user } = response.data;
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user_id', user.id);
-
-      handleLogin(user);
+      const response = await loginUser({ email, password });
+      console.log('User data received on login:', response);
+      handleLogin(response);
       setEmail('');
       setPassword('');
       navigate('/watchlist');

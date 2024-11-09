@@ -15,12 +15,20 @@ const UserPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('UserPage received username:', username);
+
     const fetchUserData = async () => {
       try {
         const userResponse = await axios.get(`http://localhost:5000/api/users/${username}`);
+        console.log('Fetched user data:', userResponse.data);
         setUser(userResponse.data);
 
-        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist/${userResponse.data.id}`);
+        const token = localStorage.getItem('token');
+        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist/${userResponse.data.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setWatchlist(watchlistResponse.data);
 
         const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/user/${userResponse.data.id}`);

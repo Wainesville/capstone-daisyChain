@@ -5,7 +5,7 @@ const authenticate = require('./middleware/authenticate'); // Adjust path if nee
 require('dotenv').config();
 
 const app = express();
-const port =5000;
+const port = 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -19,13 +19,15 @@ const watchlistRoutes = require('./routes/watchlist');
 const movieRoutes = require('./routes/movieRoutes');
 const commentsRoutes = require('./routes/commentsRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const userRoutes = require('./routes/userRoutes'); // Ensure userRoutes is imported
 
 // Use Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/watchlist', authenticate, watchlistRoutes);
+app.use('/api/watchlist', authenticate, watchlistRoutes); // Ensure authentication middleware is used
 app.use('/api/movies', movieRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/comments', commentsRoutes);
+app.use('/api/users', userRoutes); // Ensure userRoutes is used
 
 // Root route
 app.get('/', (req, res) => {

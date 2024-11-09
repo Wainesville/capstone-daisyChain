@@ -29,6 +29,7 @@ const registerUser = async (req, res) => {
   }
 };
 
+// Login User
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -52,7 +53,7 @@ const loginUser = async (req, res) => {
     });
 
     // Send the token and user object back with a status of 200
-    return res.status(200).json({ token, user: user.rows[0] }); // Ensure correct response format
+    return res.status(200).json({ token, user: { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email } });
   } catch (err) {
     console.error(err.message);
     return res.status(500).json({ error: 'Server error' });

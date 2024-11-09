@@ -286,7 +286,7 @@ export const loginUser = async (credentials) => {
     try {
         const response = await axios.post(`${API_SERVER_URL}/auth/login`, credentials);
         localStorage.setItem('token', response.data.token); // Store token in local storage
-        return response.data;
+        return response.data; // Ensure that the response data includes the username
     } catch (error) {
         console.error('Error logging in:', error.response ? error.response.data : error.message);
         throw error;

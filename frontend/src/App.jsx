@@ -25,15 +25,22 @@ function App() {
     if (token && storedUsername) {
       setIsLoggedIn(true);
       setUsername(storedUsername);
+      console.log('Username set from localStorage:', storedUsername);
     }
   }, []);
 
-  const handleLogin = (user) => {
+  const handleLogin = (response) => {
+    const { user } = response;
+    if (!user.username) {
+        console.error('Username is undefined in handleLogin:', user);
+        return;
+    }
     setIsLoggedIn(true);
     setUsername(user.username);
-    localStorage.setItem('token', user.token);
+    localStorage.setItem('token', response.token);
     localStorage.setItem('user_id', user.id);
     localStorage.setItem('username', user.username);
+    console.log('Username set on login:', user.username);
   };
 
   const handleLogout = () => {
@@ -42,6 +49,7 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('user_id');
     localStorage.removeItem('username');
+    console.log('User logged out');
   };
 
   const handleNewPost = (newPost) => {

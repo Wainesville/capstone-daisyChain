@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import './header.css'; // Ensure to import the CSS file for styles
 
 function Header({ isLoggedIn, handleLogout, username }) {
+  console.log('Header received username:', username);
+
   return (
     <header className="header">
       <h1>Movie Tracker</h1>
