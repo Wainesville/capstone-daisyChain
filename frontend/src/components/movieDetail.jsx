@@ -18,7 +18,7 @@ const MovieDetail = () => {
             if (storedMovie) setMovie(storedMovie);
 
             try {
-                const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/${storedMovie.id}`);
+                const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/movie/${storedMovie.id}`);
                 setReviews(reviewsResponse.data);
             } catch (err) {
                 console.error('Failed to fetch reviews', err);
@@ -35,15 +35,26 @@ const MovieDetail = () => {
         }
 
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No token found in localStorage');
+                window.location.href = '/login'; // Redirect to login page
+                return;
+            }
+
             const response = await axios.post('http://localhost:5000/api/reviews', {
                 user_id: localStorage.getItem('user_id'),
                 movie_id: movieId,
                 content: comment,
-                recommendation,  // Save thumbs-up or thumbs-down
+                recommendation,
                 rating,
                 movie_title: movie.title,
-                thumbnail: movie.thumbnail,
+                thumbnail: movie.thumbnail || `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
                 logo: movie.logo,
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
             });
 
             setReviews([...reviews, response.data]);
@@ -61,7 +72,7 @@ const MovieDetail = () => {
             <h2>Movie Reviews</h2>
             {movie && (
                 <div className="movie-info">
-                    <img src={movie.thumbnail} alt={`${movie.title} thumbnail`} />
+                    <img src={movie.thumbnail || `https://image.tmdb.org/t/p/w500/${movie.poster_path}`} alt={`${movie.title} thumbnail`} />
                     <h3>{movie.title}</h3>
                     {movie.logo && <img src={movie.logo} alt={`${movie.title} logo`} className="movie-logo" />}
                 </div>
@@ -106,18 +117,22 @@ const MovieDetail = () => {
 
             <div className="reviews">
                 <h3>Reviews:</h3>
-                {reviews.map((review) => (
-                    <div key={review.id} className="review">
-                        <div className="review-header">
-                            <img src={review.thumbnail} alt={`${review.movie_title} thumbnail`} className="review-thumbnail" />
-                            <p><strong>{review.username}</strong> says:</p>
+                {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                        <div key={review.id} className="review">
+                            <div className="review-header">
+                                <img src={review.thumbnail} alt={`${review.movie_title} thumbnail`} className="review-thumbnail" />
+                                <p><strong>{review.username}</strong> says:</p>
+                            </div>
+                            <p>{review.content}</p>
+                            <p>Recommendation: {review.recommendation ? '👍' : '👎'}</p>
+                            <p>Rating: {review.rating}/10</p>
+                            <hr />
                         </div>
-                        <p>{review.content}</p>
-                        <p>Recommendation: {review.recommendation ? '👍' : '👎'}</p>
-                        <p>Rating: {review.rating}/10</p>
-                        <hr />
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p>Be the first to leave a review</p>
+                )}
             </div>
         </div>
     );

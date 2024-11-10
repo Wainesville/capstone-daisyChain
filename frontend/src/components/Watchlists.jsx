@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchWatchlist, removeFromWatchlist } from '../api';
+import axios from 'axios';
 import './styles.css';
 
 function Watchlist() {
@@ -36,6 +37,40 @@ function Watchlist() {
     }
   };
 
+  const handleSetCurrentlyWatching = async (movieId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/api/watchlist/currently-watching/${movieId}`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      setWatchlist(watchlist.map((movie) => ({
+        ...movie,
+        currently_watching: movie.movie_id === movieId,
+      })));
+    } catch (error) {
+      alert('Failed to set currently watching.');
+    }
+  };
+
+  const handleSetNextUp = async (movieId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/api/watchlist/next-up/${movieId}`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      setWatchlist(watchlist.map((movie) => ({
+        ...movie,
+        next_up: movie.movie_id === movieId,
+      })));
+    } catch (error) {
+      alert('Failed to set next up.');
+    }
+  };
+
   return (
     <div className="watchlist">
       <h2>Your Watchlist</h2>
@@ -47,6 +82,20 @@ function Watchlist() {
               <h3>{movie.title}</h3>
             </Link>
             <button onClick={() => handleRemove(movie.movie_id)}>Remove</button>
+            <div className="toggle-buttons">
+              <button
+                className={`toggle-button ${movie.currently_watching ? 'active' : ''}`}
+                onClick={() => handleSetCurrentlyWatching(movie.movie_id)}
+              >
+                Currently Watching
+              </button>
+              <button
+                className={`toggle-button ${movie.next_up ? 'active' : ''}`}
+                onClick={() => handleSetNextUp(movie.movie_id)}
+              >
+                Next Up
+              </button>
+            </div>
           </div>
         ))}
       </div>

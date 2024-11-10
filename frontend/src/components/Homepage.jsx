@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -18,7 +19,7 @@ const Homepage = () => {
         await Promise.all(response.data.map(async (review) => {
           try {
             const likesResponse = await axios.get(`http://localhost:5000/api/reviews/${review.id}/likes`);
-            const commentsResponse = await axios.get(`http://localhost:5000/api/comments/${review.id}/comments`);
+            const commentsResponse = await axios.get(`http://localhost:5000/api/reviews/${review.id}/comments`);
 
             if (likesResponse.data.likes > 0) {
               setLikedReviews(prev => new Set(prev).add(review.id));
@@ -42,16 +43,26 @@ const Homepage = () => {
 
   const handleLikeToggle = async (review_id) => {
     const userId = localStorage.getItem('user_id');
+    const token = localStorage.getItem('token');
     try {
       if (likedReviews.has(review_id)) {
-        await axios.delete(`http://localhost:5000/api/reviews/${review_id}/like`, { data: { user_id: userId } });
+        await axios.delete(`http://localhost:5000/api/reviews/${review_id}/like`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          data: { user_id: userId },
+        });
         setLikedReviews(prev => {
           const newLiked = new Set(prev);
           newLiked.delete(review_id);
           return newLiked;
         });
       } else {
-        await axios.post(`http://localhost:5000/api/reviews/${review_id}/like`, { user_id: userId });
+        await axios.post(`http://localhost:5000/api/reviews/${review_id}/like`, { user_id: userId }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setLikedReviews(prev => new Set(prev).add(review_id));
       }
 
@@ -72,6 +83,7 @@ const Homepage = () => {
 
   const handleCommentSubmit = async (review_id) => {
     const userId = localStorage.getItem('user_id');
+    const token = localStorage.getItem('token');
     if (!userId) {
       console.error('User ID not found');
       return;
@@ -81,6 +93,10 @@ const Homepage = () => {
       const response = await axios.post(`http://localhost:5000/api/comments/${review_id}/comments`, {
         user_id: userId,
         content: newComment[review_id] || '',
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       setComments(prev => ({

@@ -20,13 +20,13 @@ const getWatchlist = async (req, res) => {
 // Add Movie to Watchlist
 const addToWatchlist = async (req, res) => {
   const userId = req.user.userId;
-  const { movieId, title, thumbnail, logo } = req.body;
+  const { movieId, title, poster } = req.body;
 
   if (!userId) {
     return res.status(403).json({ error: 'Access denied. No user ID provided.' });
   }
 
-  console.log('Adding to watchlist:', { userId, movieId, title, thumbnail, logo });
+  console.log('Adding to watchlist:', { userId, movieId, title, poster });
 
   try {
     // Check if the movie exists in the movies table
@@ -34,15 +34,15 @@ const addToWatchlist = async (req, res) => {
     if (movieExists.rows.length === 0) {
       // Insert the movie into the movies table if it doesn't exist
       await pool.query(
-        'INSERT INTO movies (id, title, thumbnail, logo) VALUES ($1, $2, $3, $4)',
-        [movieId, title, thumbnail, logo]
+        'INSERT INTO movies (id, title, poster) VALUES ($1, $2, $3)',
+        [movieId, title, poster]
       );
     }
 
     // Insert the movie into the watchlist table
     await pool.query(
       'INSERT INTO watchlist (user_id, movie_id, title, poster) VALUES ($1, $2, $3, $4)',
-      [userId, movieId, title, thumbnail]
+      [userId, movieId, title, poster]
     );
     res.status(201).json({ message: 'Movie added to watchlist' });
   } catch (err) {
@@ -71,8 +71,48 @@ const removeFromWatchlist = async (req, res) => {
   }
 };
 
+// Set Currently Watching
+const setCurrentlyWatching = async (req, res) => {
+  const userId = req.user.userId;
+  const { movieId } = req.params;
+
+  try {
+    // Reset currently watching for all movies
+    await pool.query('UPDATE watchlist SET currently_watching = false WHERE user_id = $1', [userId]);
+
+    // Set currently watching for the selected movie
+    await pool.query('UPDATE watchlist SET currently_watching = true WHERE user_id = $1 AND movie_id = $2', [userId, movieId]);
+
+    res.status(200).json({ message: 'Currently watching updated' });
+  } catch (err) {
+    console.error('Error setting currently watching:', err);
+    res.status(500).json({ error: 'Failed to set currently watching' });
+  }
+};
+
+// Set Next Up
+const setNextUp = async (req, res) => {
+  const userId = req.user.userId;
+  const { movieId } = req.params;
+
+  try {
+    // Reset next up for all movies
+    await pool.query('UPDATE watchlist SET next_up = false WHERE user_id = $1', [userId]);
+
+    // Set next up for the selected movie
+    await pool.query('UPDATE watchlist SET next_up = true WHERE user_id = $1 AND movie_id = $2', [userId, movieId]);
+
+    res.status(200).json({ message: 'Next up updated' });
+  } catch (err) {
+    console.error('Error setting next up:', err);
+    res.status(500).json({ error: 'Failed to set next up' });
+  }
+};
+
 module.exports = {
   getWatchlist,
   addToWatchlist,
   removeFromWatchlist,
+  setCurrentlyWatching,
+  setNextUp,
 };

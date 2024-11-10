@@ -43,42 +43,45 @@ export const fetchMovieInfo = async (movieId) => {
 
 // Fetch Movie Reviews
 export const fetchMovieReviews = async (movieId) => {
-  try {
-    const response = await axios.get(`${API_SERVER_URL}/reviews/${movieId}`);
-    return response.data; // Return the list of reviews for the movie
-  } catch (error) {
-    console.error('Error fetching movie reviews:', error.response ? error.response.data : error.message);
-    return []; // Return an empty array if there's an error
-  }
-};
-
-export const fetchWatchlist = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    console.error('No token found in localStorage');
-    window.location.href = '/login'; // Redirect to login page
-    return;
-  }
-  try {
-    const response = await axios.get(`${API_SERVER_URL}/watchlist`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.status === 403) {
-      console.error('Unauthorized: Invalid or expired token. Please log in again.');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_id');
-      localStorage.removeItem('username');
-      window.location.href = '/login'; // Redirect to login page
-    } else {
-      console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
+    try {
+      const response = await axios.get(`${API_SERVER_URL}/reviews/movie/${movieId}`);
+      return response.data; // Return the list of reviews for the movie
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return []; // Return an empty array if no reviews are found
+      }
+      console.error('Error fetching movie reviews:', error.response ? error.response.data : error.message);
+      return []; // Return an empty array if there's an error
     }
-    throw error;
-  }
-};
+  };
+
+  export const fetchWatchlist = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/login'; // Redirect to login page
+      return;
+    }
+    try {
+      const response = await axios.get(`${API_SERVER_URL}/watchlist`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        console.error('Unauthorized: Invalid or expired token. Please log in again.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('username');
+        window.location.href = '/login'; // Redirect to login page
+      } else {
+        console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
+      }
+      throw error;
+    }
+  };
 
 // Add to Watchlist
 export const addToWatchlist = async (movieId, title, poster) => {
