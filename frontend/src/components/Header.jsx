@@ -17,12 +17,12 @@ function Header({ isLoggedIn, handleLogout, username }) {
             </>
           ) : (
             <>
-              <li><Link to="/browse" className="nav-link">Browse</Link></li>
+              <li><Link to="/browse" className="nav-link">Browse/Search</Link></li>
               <li><Link to="/watchlist" className="nav-link">Watchlist</Link></li>
               <li><Link to="/homepage" className="nav-link">Reviews</Link></li>
               <li><Link to="/trending" className="nav-link">Trending Movies</Link></li>
               <li><Link to="/upcoming" className="nav-link">Upcoming Movies</Link></li>
-              <li><Link to={`/user/${username}`} className="nav-link">My Page</Link></li> {/* Link to user page */}
+              <li><Link to={`/user/${username}`} className="nav-link">Profile</Link></li> {/* Link to user page */}
               <li>
                 <button onClick={handleLogout} className="logout-button">Logout</button>
               </li>

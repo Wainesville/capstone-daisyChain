@@ -20,6 +20,7 @@ function Login({ handleLogin }) {
       setPassword('');
       navigate('/watchlist');
     } catch (err) {
+      console.error('Login failed:', err);
       setError('Login failed. Please check your credentials.');
     }
   };

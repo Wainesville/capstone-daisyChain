@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchWatchlist, removeFromWatchlist } from '../api';
-import axios from 'axios';
 import './styles.css';
 
 function Watchlist() {
@@ -11,6 +10,11 @@ function Watchlist() {
     const loadWatchlist = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/login'; // Redirect to login page
+          return;
+        }
         const movies = await fetchWatchlist(token);
         setWatchlist(movies);
       } catch (error) {

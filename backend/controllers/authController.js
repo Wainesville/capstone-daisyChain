@@ -29,30 +29,28 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Login User
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find user by email
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (user.rows.length === 0) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Compare password
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ userId: user.rows[0].id }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
 
-    // Send the token and user object back with a status of 200
+    console.log('Token generated:', token);
+    console.log('User data:', { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email });
+
     return res.status(200).json({ token, user: { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email } });
   } catch (err) {
     console.error(err.message);

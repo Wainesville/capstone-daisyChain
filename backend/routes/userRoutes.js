@@ -1,7 +1,9 @@
 const express = require('express');
-const router = express.Router();
+const authenticate = require('../middleware/authenticate');
 const { getUserByUsername } = require('../controllers/userController');
 
-router.get('/:username', getUserByUsername);
+const router = express.Router();
+
+router.get('/:username', authenticate, getUserByUsername);
 
 module.exports = router;

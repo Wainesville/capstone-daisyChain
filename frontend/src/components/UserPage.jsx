@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './UserPage.css';
 
@@ -19,22 +19,39 @@ const UserPage = () => {
 
     const fetchUserData = async () => {
       try {
-        const userResponse = await axios.get(`http://localhost:5000/api/users/${username}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/login'; // Redirect to login page
+          return;
+        }
+        const userResponse = await axios.get(`http://localhost:5000/api/users/${username}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         console.log('Fetched user data:', userResponse.data);
         setUser(userResponse.data);
 
-        const token = localStorage.getItem('token');
-        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist/${userResponse.data.id}`, {
+        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         setWatchlist(watchlistResponse.data);
 
-        const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/user/${userResponse.data.id}`);
+        const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/user/${userResponse.data.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setReviews(reviewsResponse.data);
 
-        const recommendationsResponse = await axios.get(`http://localhost:5000/api/recommendations`);
+        const recommendationsResponse = await axios.get(`http://localhost:5000/api/recommendations`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setRecommendations(recommendationsResponse.data);
 
         // Set currently watching, top 5 movies, and up next

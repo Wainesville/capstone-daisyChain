@@ -14,7 +14,7 @@ const MovieCollage = () => {
       let totalPosters = 0;
       let page = 1;
 
-      while (totalPosters < 24) {
+      while (totalPosters < 27) {
         try {
           const response = await axios.get(`${BASE_URL}/trending/movie/week`, {
             params: { api_key: API_KEY, page },
@@ -28,10 +28,10 @@ const MovieCollage = () => {
           totalPosters = posters.length; // Update totalPosters count
 
           // If we have 24 or more, deduplicate and slice to keep only the first 24
-          if (totalPosters >= 24) {
+          if (totalPosters >= 27) {
             // Deduplicate by id
             const uniquePosters = Array.from(new Map(posters.map(movie => [movie.id, movie])).values());
-            setMovies(uniquePosters.slice(0, 24)); // Set the unique posters
+            setMovies(uniquePosters.slice(0, 27)); // Set the unique posters
             return; // Exit once we have enough posters
           }
 

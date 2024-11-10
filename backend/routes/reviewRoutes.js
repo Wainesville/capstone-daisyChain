@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Ensure this is your actual database connection
+const authenticate = require('../middleware/authenticate'); // Ensure authentication middleware is used
+const { getReviewsByUserId } = require('../controllers/reviewController');
 
 // Create a new review
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     const { user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo } = req.body;
 
     console.log('Request Body:', req.body);
@@ -75,7 +77,7 @@ router.get('/', async (req, res) => {
 });
 
 // Like a review
-router.post('/:review_id/like', async (req, res) => {
+router.post('/:review_id/like', authenticate, async (req, res) => {
     const { user_id } = req.body; // Get the user ID from the request body
     const { review_id } = req.params; // Get the review ID from the URL
 
@@ -104,7 +106,7 @@ router.post('/:review_id/like', async (req, res) => {
 });
 
 // Unlike a review
-router.delete('/:review_id/like', async (req, res) => {
+router.delete('/:review_id/like', authenticate, async (req, res) => {
     const { user_id } = req.body; // Get the user ID from the request body
     const { review_id } = req.params; // Get the review ID from the URL
 
@@ -143,5 +145,8 @@ router.get('/:review_id/likes', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch likes count' });
     }
 });
+
+// Get reviews by user ID
+router.get('/user/:userId', authenticate, getReviewsByUserId);
 
 module.exports = router;

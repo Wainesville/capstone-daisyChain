@@ -20,6 +20,7 @@ const movieRoutes = require('./routes/movieRoutes');
 const commentsRoutes = require('./routes/commentsRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const userRoutes = require('./routes/userRoutes'); // Ensure userRoutes is imported
+const recommendationRoutes = require('./routes/recommendationRoutes'); // Add this line
 
 // Use Routes
 app.use('/api/auth', authRoutes);
@@ -28,6 +29,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/users', userRoutes); // Ensure userRoutes is used
+app.use('/api/recommendations', recommendationRoutes); // Add this line
 
 // Root route
 app.get('/', (req, res) => {

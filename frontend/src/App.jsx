@@ -18,7 +18,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
 
-  // Check for token and username in localStorage to set initial login state
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUsername = localStorage.getItem('username');
@@ -26,14 +25,16 @@ function App() {
       setIsLoggedIn(true);
       setUsername(storedUsername);
       console.log('Username set from localStorage:', storedUsername);
+    } else {
+      console.log('No token or username found in localStorage');
     }
   }, []);
 
   const handleLogin = (response) => {
     const { user } = response;
     if (!user.username) {
-        console.error('Username is undefined in handleLogin:', user);
-        return;
+      console.error('Username is undefined in handleLogin:', user);
+      return;
     }
     setIsLoggedIn(true);
     setUsername(user.username);
@@ -41,6 +42,7 @@ function App() {
     localStorage.setItem('user_id', user.id);
     localStorage.setItem('username', user.username);
     console.log('Username set on login:', user.username);
+    console.log('Token set on login:', response.token);
   };
 
   const handleLogout = () => {

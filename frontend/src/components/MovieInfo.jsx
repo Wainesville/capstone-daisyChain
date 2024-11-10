@@ -31,6 +31,13 @@ function MovieInfo() {
     useEffect(() => {
         const loadMovieInfo = async () => {
             try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('No token found in localStorage');
+                    window.location.href = '/login'; // Redirect to login page
+                    return;
+                }
+
                 const movieData = await fetchMovieInfo(id);
                 setMovie(movieData);
 
@@ -80,7 +87,8 @@ function MovieInfo() {
                 await axios.post('http://localhost:5000/api/watchlist/add', {
                     movieId: movie.id,
                     title: movie.title,
-                    poster: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                    thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                    logo: movie.logo,
                 }, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -107,6 +115,12 @@ function MovieInfo() {
         }
 
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error('You must be logged in to submit a review.');
+                return;
+            }
+
             const response = await axios.post('http://localhost:5000/api/reviews', {
                 user_id: localStorage.getItem('user_id'),
                 movie_id: id,
@@ -116,6 +130,10 @@ function MovieInfo() {
                 movie_title: movie.title,
                 thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
                 logo: movie.logo,
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
             });
 
             setReviews([...reviews, response.data]);
