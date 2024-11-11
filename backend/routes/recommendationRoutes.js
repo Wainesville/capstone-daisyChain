@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getRecommendations, addRecommendation } = require('../controllers/recommendationController');
+const authenticate = require('../middleware/authenticate');
+const { addRecommendation, getRecommendations } = require('../controllers/recommendationController');
 
-// Get Recommendations
-router.get('/', getRecommendations);
-
-// Add a new recommendation
-router.post('/', addRecommendation);
+router.post('/add', authenticate, addRecommendation);
+router.get('/', authenticate, getRecommendations);
 
 module.exports = router;

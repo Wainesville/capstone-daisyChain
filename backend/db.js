@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+require('dotenv').config(); // Load environment variables
 
 const pool = new Pool({
     user: process.env.DB_USER,

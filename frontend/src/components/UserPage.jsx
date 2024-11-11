@@ -15,6 +15,8 @@ const UserPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const defaultProfilePicture = 'https://cdn.pixabay.com/photo/2019/08/11/18/59/icon-4399701_1280.png'; // Default image URL
+
   useEffect(() => {
     console.log('UserPage received username:', username);
 
@@ -61,10 +63,19 @@ const UserPage = () => {
           setUpNext(watchlistResponse.data[1] || null);
         }
 
-        // Set top 5 movies
-        if (userResponse.data.top_movies_details) {
-          console.log('Top movies details:', userResponse.data.top_movies_details);
-          setTopMovies(userResponse.data.top_movies_details);
+        // Fetch top 5 movies details
+        if (userResponse.data.top_movies && userResponse.data.top_movies.length > 0) {
+          const topMoviesDetails = await Promise.all(
+            userResponse.data.top_movies.map(async (movieId) => {
+              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              return movieResponse.data;
+            })
+          );
+          setTopMovies(topMoviesDetails);
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -81,7 +92,7 @@ const UserPage = () => {
   return (
     <div className="user-page">
       <div className="user-header">
-        <img src={user.profile_picture} alt={`${user.username}'s profile`} className="user-image" />
+        <img src={user.profile_picture || defaultProfilePicture} alt={`${user.username}'s profile`} className="user-image" />
         <h1>{user.username}</h1>
         <button onClick={() => navigate(`/edit-profile`)}>Edit Profile</button>
       </div>
@@ -99,21 +110,6 @@ const UserPage = () => {
             <p>No movie currently watching</p>
           )}
         </div>
-        <div className="top-movies">
-          <h2>Top 5 Movies</h2>
-          {topMovies.length > 0 ? (
-            topMovies.map((movie) => (
-              <div key={movie.id} className="movie-card">
-                <Link to={`/movie/${movie.id}`}>
-                  <img src={movie.poster} alt={movie.title} />
-                  <h3>{movie.title}</h3>
-                </Link>
-              </div>
-            ))
-          ) : (
-            <p>No top movies</p>
-          )}
-        </div>
         <div className="up-next">
           <h2>Up Next</h2>
           {upNext ? (
@@ -125,6 +121,36 @@ const UserPage = () => {
             </div>
           ) : (
             <p>No movie up next</p>
+          )}
+        </div>
+        <div className="top-movies">
+          <h2>Top 5 Movies</h2>
+          {topMovies.length > 0 ? (
+            topMovies.map((movie) => (
+              <div key={movie.id} className="movie-card">
+                <Link to={`/movie/${movie.id}`}>
+                  <img src={movie.thumbnail} alt={movie.title} />
+                  <h3>{movie.title}</h3>
+                </Link>
+              </div>
+            ))
+          ) : (
+            <p>No top movies</p>
+          )}
+        </div>
+        <div className="recommendations">
+          <h2>Recommendations</h2>
+          {recommendations.length > 0 ? (
+            recommendations.map((movie) => (
+              <div key={movie.id} className="movie-card">
+                <Link to={`/movie/${movie.id}`}>
+                  <img src={movie.poster} alt={movie.title} />
+                  <h3>{movie.title}</h3>
+                </Link>
+              </div>
+            ))
+          ) : (
+            <p>No recommendations</p>
           )}
         </div>
       </div>
@@ -141,20 +167,6 @@ const UserPage = () => {
             ))
           ) : (
             <p>No reviews</p>
-          )}
-        </div>
-        <div className="recommendations-section">
-          <h2>Recommendations</h2>
-          {recommendations.length > 0 ? (
-            recommendations.map((rec) => (
-              <div key={rec.id} className="recommendation-card">
-                <h3>{rec.title}</h3>
-                <p>{rec.content}</p>
-                <Link to={`/user/${rec.username}`}>{rec.username}</Link>
-              </div>
-            ))
-          ) : (
-            <p>No recommendations</p>
           )}
         </div>
       </div>

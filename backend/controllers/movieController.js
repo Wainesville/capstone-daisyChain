@@ -64,8 +64,27 @@ const getReviewsByMovieId = async (req, res) => {
   }
 };
 
+// Get Movie by ID
+const getMovieById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const movie = await pool.query('SELECT * FROM movies WHERE id = $1', [id]);
+
+    if (movie.rows.length === 0) {
+      return res.status(404).json({ error: 'Movie not found' });
+    }
+
+    res.json(movie.rows[0]);
+  } catch (err) {
+    console.error('Error fetching movie:', err);
+    res.status(500).json({ error: 'Failed to fetch movie' });
+  }
+};
+
 module.exports = {
   getAllMovies,
   createReview,
   getReviewsByMovieId,
+  getMovieById
 };

@@ -7,8 +7,10 @@ const EditProfile = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [bio, setBio] = useState('');
   const [favoriteGenres, setFavoriteGenres] = useState([]);
-  const [topMovies, setTopMovies] = useState([]);
-  const [allMovies, setAllMovies] = useState([]);
+  const [topMovies, setTopMovies] = useState(Array(5).fill(null));
+  const [recommendations, setRecommendations] = useState(Array(5).fill(null));
+  const [searchResults, setSearchResults] = useState(Array(5).fill([]));
+  const [searchQueries, setSearchQueries] = useState(Array(5).fill(''));
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -27,18 +29,42 @@ const EditProfile = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const { profile_picture, bio, favorite_genres, top_movies } = profileResponse.data;
+        const { profile_picture, bio, favorite_genres, top_movies, recommendations } = profileResponse.data;
         setProfilePicture(profile_picture);
         setBio(bio);
         setFavoriteGenres(favorite_genres || []);
-        setTopMovies(top_movies || []);
 
-        const moviesResponse = await axios.get('http://localhost:5000/api/movies', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setAllMovies(moviesResponse.data);
+        // Fetch details for top movies
+        const topMoviesDetails = await Promise.all(
+          top_movies.map(async (movieId) => {
+            if (movieId) {
+              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              return movieResponse.data;
+            }
+            return null;
+          })
+        );
+        setTopMovies(topMoviesDetails.concat(Array(5 - topMoviesDetails.length).fill(null)));
+
+        // Fetch details for recommendations
+        const recommendationsDetails = await Promise.all(
+          recommendations.map(async (movieId) => {
+            if (movieId) {
+              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              return movieResponse.data;
+            }
+            return null;
+          })
+        );
+        setRecommendations(recommendationsDetails.concat(Array(5 - recommendationsDetails.length).fill(null)));
       } catch (error) {
         console.error('Failed to fetch profile data:', error);
         setError('Failed to fetch profile data');
@@ -65,12 +91,60 @@ const EditProfile = () => {
     }
   };
 
-  const handleTopMoviesChange = (movieId) => {
-    if (topMovies.includes(movieId)) {
-      setTopMovies(topMovies.filter((id) => id !== movieId));
-    } else if (topMovies.length < 5) {
-      setTopMovies([...topMovies, movieId]);
+  const handleSearchChange = (index, e) => {
+    const newSearchQueries = [...searchQueries];
+    newSearchQueries[index] = e.target.value;
+    setSearchQueries(newSearchQueries);
+  };
+
+  const handleSearchSubmit = async (index, e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.get(`https://api.themoviedb.org/3/search/movie`, {
+        params: {
+          api_key: '8feb4db25b7185d740785fc6b6f0e850',
+          query: searchQueries[index],
+        },
+      });
+      const newSearchResults = [...searchResults];
+      newSearchResults[index] = response.data.results;
+      setSearchResults(newSearchResults);
+    } catch (error) {
+      console.error('Failed to search movies:', error);
+      setError('Failed to search movies');
     }
+  };
+
+  const handleTopMoviesChange = (index, movie) => {
+    const newTopMovies = [...topMovies];
+    newTopMovies[index] = movie;
+    setTopMovies(newTopMovies);
+
+    // Clear the search results for the selected index
+    const newSearchResults = [...searchResults];
+    newSearchResults[index] = [];
+    setSearchResults(newSearchResults);
+
+    // Clear the search query for the selected index
+    const newSearchQueries = [...searchQueries];
+    newSearchQueries[index] = '';
+    setSearchQueries(newSearchQueries);
+  };
+
+  const handleRecommendationsChange = (index, movie) => {
+    const newRecommendations = [...recommendations];
+    newRecommendations[index] = movie;
+    setRecommendations(newRecommendations);
+
+    // Clear the search results for the selected index
+    const newSearchResults = [...searchResults];
+    newSearchResults[index] = [];
+    setSearchResults(newSearchResults);
+
+    // Clear the search query for the selected index
+    const newSearchQueries = [...searchQueries];
+    newSearchQueries[index] = '';
+    setSearchQueries(newSearchQueries);
   };
 
   const handleSubmit = async (e) => {
@@ -87,7 +161,8 @@ const EditProfile = () => {
       formData.append('profile_picture', profilePicture);
       formData.append('bio', bio);
       formData.append('favorite_genres', JSON.stringify(favoriteGenres));
-      formData.append('top_movies', JSON.stringify(topMovies));
+      formData.append('top_movies', JSON.stringify(topMovies.map((movie) => movie?.id)));
+      formData.append('recommendations', JSON.stringify(recommendations.map((movie) => movie?.id)));
 
       await axios.put('http://localhost:5000/api/users/profile', formData, {
         headers: {
@@ -136,20 +211,69 @@ const EditProfile = () => {
         </div>
         <div className="form-group">
           <label>Top 5 Movies</label>
-          <div className="movies">
-            {allMovies.map((movie) => (
-              <div key={movie.id}>
+          {topMovies.map((movie, index) => (
+            <div key={index} className="top-movie">
+              <div className="search-form">
                 <input
-                  type="checkbox"
-                  id={`movie-${movie.id}`}
-                  value={movie.id}
-                  checked={topMovies.includes(movie.id)}
-                  onChange={() => handleTopMoviesChange(movie.id)}
+                  type="text"
+                  value={searchQueries[index]}
+                  onChange={(e) => handleSearchChange(index, e)}
+                  placeholder={`Search for movie ${index + 1}`}
                 />
-                <label htmlFor={`movie-${movie.id}`}>{movie.title}</label>
+                <button type="button" onClick={(e) => handleSearchSubmit(index, e)}>Search</button>
               </div>
-            ))}
-          </div>
+              <div className="search-results">
+                {searchResults[index].map((result) => (
+                  <div key={result.id} className="search-result">
+                    <img src={`https://image.tmdb.org/t/p/w200/${result.poster_path}`} alt={result.title} />
+                    <button type="button" onClick={() => handleTopMoviesChange(index, result)}>
+                      {topMovies[index]?.id === result.id ? 'Remove' : 'Add'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {movie && (
+                <div className="selected-movie">
+                  <img src={`https://image.tmdb.org/t/p/w200/${movie.poster_path}`} alt={movie.title} />
+                  <span>{index + 1}. {movie.title}</span>
+                  <button type="button" onClick={() => handleTopMoviesChange(index, null)}>Remove</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="form-group">
+          <label>Recommendations</label>
+          {recommendations.map((movie, index) => (
+            <div key={index} className="top-movie">
+              <div className="search-form">
+                <input
+                  type="text"
+                  value={searchQueries[index]}
+                  onChange={(e) => handleSearchChange(index, e)}
+                  placeholder={`Search for movie ${index + 1}`}
+                />
+                <button type="button" onClick={(e) => handleSearchSubmit(index, e)}>Search</button>
+              </div>
+              <div className="search-results">
+                {searchResults[index].map((result) => (
+                  <div key={result.id} className="search-result">
+                    <img src={`https://image.tmdb.org/t/p/w200/${result.poster_path}`} alt={result.title} />
+                    <button type="button" onClick={() => handleRecommendationsChange(index, result)}>
+                      {recommendations[index]?.id === result.id ? 'Remove' : 'Add'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {movie && (
+                <div className="selected-movie">
+                  <img src={`https://image.tmdb.org/t/p/w200/${movie.poster_path}`} alt={movie.title} />
+                  <span>{index + 1}. {movie.title}</span>
+                  <button type="button" onClick={() => handleRecommendationsChange(index, null)}>Remove</button>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
         <button type="submit">Save Changes</button>
       </form>

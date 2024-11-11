@@ -146,6 +146,32 @@ function MovieInfo() {
         }
       };
 
+    const handleAddRecommendation = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error('You must be logged in to add a recommendation.');
+                return;
+            }
+
+            await axios.post('http://localhost:5000/api/recommendations/add', {
+                movieId: movie.id,
+                title: movie.title,
+                poster: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                logo: movie.logo,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            toast.success('Movie added to recommendations!');
+        } catch (error) {
+            console.error('Failed to add recommendation:', error);
+            toast.error('Failed to add recommendation.');
+        }
+    };
+
     if (error) return <div>{error}</div>;
     if (!movie) return <div>Loading...</div>;
 
@@ -208,6 +234,9 @@ function MovieInfo() {
                 <p><strong>Release Date:</strong> {movie.release_date}</p>
                 <button onClick={handleWatchlistToggle} className="add-to-watchlist-button">
                     {inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                </button>
+                <button onClick={handleAddRecommendation} className="add-to-recommendations-button">
+                    Add to Recommendations
                 </button>
                 <button onClick={handleReviewMovie} className="review-movie-button">
                     {showReviewForm ? 'Cancel Review' : 'Write a Review'}

@@ -1,79 +1,24 @@
-/* General Reset */
-* {
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+  padding-top: 60px; /* Add padding to the top to account for the header height */
 }
 
-/* General Background and Font Color */
-body {
-  background-color: black;
+button {
+  background-color: #007bff;
   color: white;
-  padding-top: 80px; /* Add padding to the top to account for the fixed header */
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-/* Watchlist Container */
-.watchlist {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center align the content */
-  padding: 20px;
-  background-color: #f4f4f4; /* Light gray background */
-  border-radius: 10px; /* Rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-}
-
-/* Header */
-.watchlist h2 {
-  font-family: 'Arial', sans-serif;
-  font-size: 2em; /* Larger font size */
-  color: #333; /* Darker text color */
-  margin-bottom: 20px;
-}
-
-/* User Profile Section */
-.user-profile {
-  display: flex;
-  align-items: flex-start;
-  width: 100%; /* Full width */
-  margin-bottom: 20px;
-}
-
-/* User Photo */
-.user-photo {
-  width: 100px; /* Fixed size */
-  height: 100px; /* Fixed size */
-  border-radius: 50%; /* Circular shape */
-  object-fit: cover; /* Crop to fit */
-  margin-right: 20px; /* Space to the right */
-  border: 2px solid #007bff; /* Blue border */
-}
-
-/* Bio Section */
-.bio {
-  flex: 1; /* Take the remaining space */
-}
-
-/* Username */
-.username {
-  font-size: 1.5em; /* Larger font for username */
-  font-weight: bold; /* Bold text */
-  color: #007bff; /* Primary color */
-}
-
-/* Favorite Movies */
-.favorite-movies {
-  margin: 10px 0; /* Space above and below */
-  font-style: italic; /* Italic style */
-  color: #555; /* Darker gray */
-}
-
-/* About Section */
-.about {
-  margin-top: 10px; /* Space above */
-  font-size: 0.9em; /* Smaller font size */
-  color: #666; /* Lighter gray */
+button:hover {
+  background-color: #0056b3;
 }
 
 /* Movie Grid */
@@ -93,205 +38,76 @@ body {
   transition: transform 0.3s; /* Animation for hover effect */
 }
 
-/* Movie Card Hover Effect */
 .movie-card:hover {
   transform: translateY(-5px); /* Lift effect */
 }
 
-/* Movie Card Image */
 .movie-card img {
   width: 100%; /* Full width */
   height: auto; /* Maintain aspect ratio */
 }
 
-/* Movie Title */
 .movie-card h3 {
   padding: 10px; /* Space inside card */
   font-size: 1em; /* Normal font size */
-  color: #333; /* Dark text */
+  color: #000; /* Black text */
   text-align: center; /* Center title */
+  margin-top: 10px; /* Add space between the title and the movie poster */
 }
 
-/* Remove Button */
-.movie-card button {
-  background-color: #e74c3c; /* Red color */
-  color: rgb(0, 0, 0); /* White text */
-  border: none;
-  border-radius: 4px; /* Rounded corners */
-  padding: 8px; /* Padding inside */
-  cursor: pointer; /* Pointer on hover */
-  transition: background-color 0.3s; /* Smooth transition */
-  margin: 10px; /* Space around button */
-}
-
-/* Remove Button Hover Effect */
-.movie-card button:hover {
-  background-color: #c0392b; /* Darker red on hover */
-}
-
-/* Toggle Buttons */
-.toggle-buttons {
-  display: flex;
-  justify-content: space-between;
+/* Review Card */
+.review-card {
+  background-color: #fff;
   padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
 }
 
-.toggle-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+.review-card h3 {
+  margin-bottom: 5px;
+  font-size: 1.2em;
+  color: #007bff;
 }
 
-.toggle-button.active {
-  background-color: #28a745; /* Green for active */
+.review-card p {
+  margin-bottom: 5px;
+  color: #555;
 }
 
-.toggle-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+.review-card p:last-child {
+  margin-bottom: 0;
 }
 
-/* Header Styles */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgba(31, 31, 31, 0.8);
-  padding: 20px 0;
-  color: white;
-  z-index: 2;
-  display: flex;
-  justify-content: space-between; /* Space between title and nav */
-  align-items: center; /* Center items vertically */
+/* Recommendation Card */
+.recommendation-card {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
 }
 
-.header h1 {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 24px;
+.recommendation-card h3 {
+  margin-bottom: 5px;
+  font-size: 1.2em;
+  color: #007bff;
 }
 
-.header nav ul {
-  list-style: none;
-  display: flex;
-  gap: 15px; /* Space between nav items */
-  padding: 0 20px;
+.recommendation-card p {
+  margin-bottom: 5px;
+  color: #555;
 }
 
-.nav-link {
-  color: white;
+.recommendation-card p:last-child {
+  margin-bottom: 0;
+}
+
+.recommendation-card a {
+  color: #007bff;
   text-decoration: none;
-  padding: 8px 12px; /* Add some padding for better click area */
-  border-radius: 4px; /* Rounded corners */
-  transition: background-color 0.3s ease; /* Smooth background transition */
 }
 
-.nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.2); /* Change background on hover */
-}
-
-.logout-button {
-  background-color: #ff5e57; /* Same as button in forms */
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.logout-button:hover {
-  background-color: rgba(255, 94, 87, 0.8); /* Slightly darker on hover */
-}
-
-.username {
-  margin-left: 15px; /* Space from the logout button */
-  font-weight: bold; /* Make username stand out */
-}
-
-/* Form Container */
-.form-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 30px;
-  border-radius: 8px;
-  width: 300px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  color: black; /* Ensure text inside form container is black */
-  margin: 0 auto; /* Center horizontally */
-  position: relative;
-  z-index: 3; /* Ensure the form is on top of the background */
-}
-
-/* Centering the Form on the Page */
-.centered-form {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Full viewport height */
-}
-
-/* CSS for body-content */
-.body-content {
-  margin-top: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  z-index: 1;
-}
-
-/* Movie Collage Background */
-.movie-collage {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-  gap: 0;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.collage-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Button and Input Styles */
-button {
-  background-color: #ff5e57;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  cursor: pointer;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-input {
-  padding: 10px;
-  margin-bottom: 15px;
-  width: 100%;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-  .movie-collage {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    grid-auto-rows: 100px;
-  }
+.recommendation-card a:hover {
+  text-decoration: underline;
 }
