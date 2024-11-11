@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchWatchlist, removeFromWatchlist } from '../api';
 import axios from 'axios';
 import './styles.css';
 
@@ -16,11 +15,14 @@ function Watchlist() {
           window.location.href = '/login'; // Redirect to login page
           return;
         }
-        const movies = await fetchWatchlist(token);
-        setWatchlist(movies);
+        const response = await axios.get('http://localhost:5000/api/watchlist', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setWatchlist(response.data);
       } catch (error) {
         console.error('Error fetching watchlist:', error);
-        alert('Failed to fetch watchlist. Please try again later.');
       }
     };
 
@@ -30,10 +32,14 @@ function Watchlist() {
   const handleRemove = async (movieId) => {
     try {
       const token = localStorage.getItem('token');
-      await removeFromWatchlist(movieId, token);
+      await axios.delete(`http://localhost:5000/api/watchlist/remove/${movieId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setWatchlist(watchlist.filter((movie) => movie.movie_id !== movieId));
     } catch (error) {
-      alert('Failed to remove movie from watchlist.');
+      console.error('Failed to remove movie from watchlist:', error);
     }
   };
 
@@ -42,15 +48,21 @@ function Watchlist() {
       const token = localStorage.getItem('token');
       await axios.put(`http://localhost:5000/api/watchlist/currently-watching/${movieId}`, {}, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      setWatchlist(watchlist.map((movie) => ({
-        ...movie,
-        currently_watching: movie.movie_id === movieId,
-      })));
+      setWatchlist((prevWatchlist) => {
+        const updatedWatchlist = prevWatchlist.map((movie) => ({
+          ...movie,
+          currently_watching: movie.movie_id === movieId,
+        }));
+        const movieIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
+        const [movie] = updatedWatchlist.splice(movieIndex, 1);
+        updatedWatchlist.unshift(movie);
+        return updatedWatchlist;
+      });
     } catch (error) {
-      alert('Failed to set currently watching.');
+      console.error('Failed to set currently watching:', error);
     }
   };
 
@@ -59,15 +71,21 @@ function Watchlist() {
       const token = localStorage.getItem('token');
       await axios.put(`http://localhost:5000/api/watchlist/next-up/${movieId}`, {}, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      setWatchlist(watchlist.map((movie) => ({
-        ...movie,
-        next_up: movie.movie_id === movieId,
-      })));
+      setWatchlist((prevWatchlist) => {
+        const updatedWatchlist = prevWatchlist.map((movie) => ({
+          ...movie,
+          next_up: movie.movie_id === movieId,
+        }));
+        const movieIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
+        const [movie] = updatedWatchlist.splice(movieIndex, 1);
+        updatedWatchlist.splice(1, 0, movie);
+        return updatedWatchlist;
+      });
     } catch (error) {
-      alert('Failed to set next up.');
+      console.error('Failed to set next up:', error);
     }
   };
 

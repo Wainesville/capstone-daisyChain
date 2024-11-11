@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './UserPage.css';
 
@@ -13,6 +13,7 @@ const UserPage = () => {
   const [topMovies, setTopMovies] = useState([]);
   const [upNext, setUpNext] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('UserPage received username:', username);
@@ -54,11 +55,16 @@ const UserPage = () => {
         });
         setRecommendations(recommendationsResponse.data);
 
-        // Set currently watching, top 5 movies, and up next
+        // Set currently watching and up next
         if (watchlistResponse.data.length > 0) {
           setCurrentlyWatching(watchlistResponse.data[0]);
-          setTopMovies(watchlistResponse.data.slice(0, 5));
           setUpNext(watchlistResponse.data[1] || null);
+        }
+
+        // Set top 5 movies
+        if (userResponse.data.top_movies_details) {
+          console.log('Top movies details:', userResponse.data.top_movies_details);
+          setTopMovies(userResponse.data.top_movies_details);
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -77,14 +83,17 @@ const UserPage = () => {
       <div className="user-header">
         <img src={user.profile_picture} alt={`${user.username}'s profile`} className="user-image" />
         <h1>{user.username}</h1>
+        <button onClick={() => navigate(`/edit-profile`)}>Edit Profile</button>
       </div>
       <div className="user-info">
         <div className="currently-watching">
           <h2>Currently Watching</h2>
           {currentlyWatching ? (
             <div className="movie-card">
-              <img src={currentlyWatching.poster} alt={currentlyWatching.title} />
-              <h3>{currentlyWatching.title}</h3>
+              <Link to={`/movie/${currentlyWatching.id}`}>
+                <img src={currentlyWatching.poster} alt={currentlyWatching.title} />
+                <h3>{currentlyWatching.title}</h3>
+              </Link>
             </div>
           ) : (
             <p>No movie currently watching</p>
@@ -95,8 +104,10 @@ const UserPage = () => {
           {topMovies.length > 0 ? (
             topMovies.map((movie) => (
               <div key={movie.id} className="movie-card">
-                <img src={movie.poster} alt={movie.title} />
-                <h3>{movie.title}</h3>
+                <Link to={`/movie/${movie.id}`}>
+                  <img src={movie.poster} alt={movie.title} />
+                  <h3>{movie.title}</h3>
+                </Link>
               </div>
             ))
           ) : (
@@ -107,8 +118,10 @@ const UserPage = () => {
           <h2>Up Next</h2>
           {upNext ? (
             <div className="movie-card">
-              <img src={upNext.poster} alt={upNext.title} />
-              <h3>{upNext.title}</h3>
+              <Link to={`/movie/${upNext.id}`}>
+                <img src={upNext.poster} alt={upNext.title} />
+                <h3>{upNext.title}</h3>
+              </Link>
             </div>
           ) : (
             <p>No movie up next</p>
