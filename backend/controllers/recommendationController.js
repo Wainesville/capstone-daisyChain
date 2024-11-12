@@ -7,19 +7,35 @@ const addRecommendation = async (req, res) => {
   const { movieId, title, poster, logo } = req.body;
 
   try {
-    // Check the current number of recommendations
-    const recommendations = await pool.query('SELECT * FROM recommendations WHERE user_id = $1 ORDER BY created_at ASC', [userId]);
+    // Check if the movie already exists in the movies table
+    const movieCheck = await pool.query('SELECT * FROM movies WHERE id = $1', [movieId]);
 
-    if (recommendations.rows.length >= 5) {
-      // Remove the oldest recommendation if there are already 5
-      const oldestRecommendation = recommendations.rows[0];
-      await pool.query('DELETE FROM recommendations WHERE id = $1', [oldestRecommendation.id]);
+    // If the movie doesn't exist, fetch and insert it
+    if (movieCheck.rows.length === 0) {
+      const movieResponse = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
+        params: {
+          api_key: '8feb4db25b7185d740785fc6b6f0e850',
+        },
+      });
+      const movie = movieResponse.data;
+      const posterPath = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+      await pool.query(
+        'INSERT INTO movies (id, title, thumbnail, logo) VALUES ($1, $2, $3, $4)',
+        [movie.id, movie.title, posterPath, movie.logo]
+      );
     }
 
-    // Add the new recommendation
+    // Fetch the user's current recommendations
+    const userResponse = await pool.query('SELECT recommendations FROM users WHERE id = $1', [userId]);
+    const currentRecommendations = userResponse.rows[0].recommendations || [];
+
+    // Add the new recommendation, ensuring the list doesn't exceed 5 items
+    const updatedRecommendations = [...currentRecommendations, movieId].slice(-5);
+
+    // Update the user's recommendations
     await pool.query(
-      'INSERT INTO recommendations (user_id, movie_id, title, poster, logo) VALUES ($1, $2, $3, $4, $5)',
-      [userId, movieId, title, poster, logo]
+      'UPDATE users SET recommendations = $1 WHERE id = $2',
+      [updatedRecommendations, userId]
     );
 
     res.status(200).json({ message: 'Recommendation added successfully' });
@@ -29,20 +45,6 @@ const addRecommendation = async (req, res) => {
   }
 };
 
-// Get recommendations for a user
-const getRecommendations = async (req, res) => {
-  const userId = req.user.userId;
-
-  try {
-    const recommendations = await pool.query('SELECT * FROM recommendations WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
-    res.status(200).json(recommendations.rows);
-  } catch (err) {
-    console.error('Error fetching recommendations:', err);
-    res.status(500).json({ error: 'Failed to fetch recommendations' });
-  }
-};
-
 module.exports = {
   addRecommendation,
-  getRecommendations,
 };

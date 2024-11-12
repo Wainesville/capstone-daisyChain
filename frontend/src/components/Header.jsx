@@ -1,9 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './header.css'; // Ensure to import the CSS file for styles
 
 function Header({ isLoggedIn, handleLogout, username }) {
-  console.log('Header received username:', username);
+  const navigate = useNavigate();
+
+  const handleLogoutClick = () => {
+    handleLogout();
+    navigate('/login'); // Redirect to login page after logout
+  };
 
   return (
     <header className="header">
@@ -23,8 +28,9 @@ function Header({ isLoggedIn, handleLogout, username }) {
               <li><Link to="/trending" className="nav-link">Trending Movies</Link></li>
               <li><Link to="/upcoming" className="nav-link">Upcoming Movies</Link></li>
               <li><Link to={`/user/${username}`} className="nav-link">Profile</Link></li> {/* Link to user page */}
+              <li><Link to="/view-users" className="nav-link">View Users</Link></li> {/* Link to view users page */}
               <li>
-                <button onClick={handleLogout} className="logout-button">Logout</button>
+                <button onClick={handleLogoutClick} className="logout-button">Logout</button>
               </li>
               <li className="username">{username}</li> {/* Display the username */}
             </>

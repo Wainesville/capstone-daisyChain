@@ -26,10 +26,10 @@ const recommendationRoutes = require('./routes/recommendationRoutes'); // Add th
 app.use('/api/auth', authRoutes);
 app.use('/api/watchlist', authenticate, watchlistRoutes); // Ensure authentication middleware is used
 app.use('/api/movies', movieRoutes);
-app.use('/api/reviews', reviewRoutes); // Ensure reviewRoutes is used
+app.use('/api/reviews', authenticate, reviewRoutes); // Ensure reviewRoutes is used
 app.use('/api/comments', commentsRoutes);
 app.use('/api/users', userRoutes); // Ensure userRoutes is used
-app.use('/api/recommendations', recommendationRoutes); // Add this line
+app.use('/api/recommendations', authenticate, recommendationRoutes); // Add this line
 
 // Root route
 app.get('/', (req, res) => {

@@ -1,5 +1,14 @@
 const express = require('express');
-const { getAllReviews, getReviewsByUserId, getReviewsByMovieId, getLikesForReview, getCommentsForReview, likeReview, unlikeReview, createReview } = require('../controllers/reviewController');
+const {
+  getAllReviews,
+  getReviewsByUserId,
+  getReviewsByMovieId,
+  getLikesForReview,
+  getCommentsForReview,
+  likeReview,
+  unlikeReview,
+  createReview
+} = require('../controllers/reviewController');
 const authenticate = require('../middleware/authenticate'); // Authentication middleware
 
 const router = express.Router();

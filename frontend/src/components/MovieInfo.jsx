@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     fetchMovieInfo,
-    addToWatchlist,
-    removeFromWatchlist,
-    fetchMovieVideos,
     fetchWatchlist,
     fetchMovieImages,
     fetchMovieReviews,
@@ -47,12 +44,6 @@ function MovieInfo() {
                     setBackdropImage(backdrops[0].file_path);
                 }
 
-                const videos = await fetchMovieVideos(id);
-                const trailer = videos.find((video) => video.type === 'Trailer');
-                if (trailer) {
-                    setTrailerKey(trailer.key);
-                }
-
                 const watchlist = await fetchWatchlist();
                 const isInWatchlist = watchlist.some((movie) => movie.movie_id === id);
                 setInWatchlist(isInWatchlist);
@@ -69,39 +60,39 @@ function MovieInfo() {
 
     const handleWatchlistToggle = async () => {
         try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            toast.error('You must be logged in to modify your watchlist.');
-            return;
-          }
-      
-          if (inWatchlist) {
-            await axios.delete(`http://localhost:5000/api/watchlist/remove/${id}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setInWatchlist(false);
-            toast.success('Movie removed from watchlist!');
-          } else {
-            await axios.post('http://localhost:5000/api/watchlist/add', {
-              movieId: movie.id,
-              title: movie.title,
-              poster: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
-              logo: movie.logo,
-            }, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setInWatchlist(true);
-            toast.success('Movie added to watchlist!');
-          }
+            const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error('You must be logged in to modify your watchlist.');
+                return;
+            }
+
+            if (inWatchlist) {
+                await axios.delete(`http://localhost:5000/api/watchlist/remove/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setInWatchlist(false);
+                toast.success('Movie removed from watchlist!');
+            } else {
+                await axios.post('http://localhost:5000/api/watchlist/add', {
+                    movieId: movie.id,
+                    title: movie.title,
+                    poster: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                    logo: movie.logo,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setInWatchlist(true);
+                toast.success('Movie added to watchlist!');
+            }
         } catch (error) {
-          console.error('Failed to modify watchlist:', error);
-          toast.error('Failed to modify watchlist.');
+            console.error('Failed to modify watchlist:', error);
+            toast.error('Failed to modify watchlist.');
         }
-      };
+    };
 
     const handleReviewMovie = () => {
         setShowReviewForm(!showReviewForm);
@@ -110,41 +101,41 @@ function MovieInfo() {
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
         if (!movie) {
-          console.error('No movie data available');
-          return;
-        }
-      
-        try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            toast.error('You must be logged in to submit a review.');
+            console.error('No movie data available');
             return;
-          }
-      
-          const response = await axios.post('http://localhost:5000/api/reviews', {
-            user_id: localStorage.getItem('user_id'),
-            movie_id: id,
-            content: comment,
-            recommendation,
-            rating,
-            movie_title: movie.title,
-            thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
-            logo: movie.logo,
-          }, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-      
-          setReviews([...reviews, response.data]);
-          setComment('');
-          setRecommendation(null);
-          setRating(5);
-          navigate('/'); // Redirect to homepage after submitting
-        } catch (err) {
-          console.error('Failed to submit comment', err.response ? err.response.data : err.message);
         }
-      };
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error('You must be logged in to submit a review.');
+                return;
+            }
+
+            const response = await axios.post('http://localhost:5000/api/reviews', {
+                user_id: localStorage.getItem('user_id'),
+                movie_id: id,
+                content: comment,
+                recommendation,
+                rating,
+                movie_title: movie.title,
+                thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+                logo: movie.logo,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setReviews([...reviews, response.data]);
+            setComment('');
+            setRecommendation(null);
+            setRating(5);
+            navigate('/'); // Redirect to homepage after submitting
+        } catch (err) {
+            console.error('Failed to submit comment', err.response ? err.response.data : err.message);
+        }
+    };
 
     const handleAddRecommendation = async () => {
         try {

@@ -5,6 +5,8 @@ body {
   padding: 0;
   box-sizing: border-box;
   padding-top: 60px; /* Add padding to the top to account for the header height */
+  background-color: #000; /* Set the main background color to black */
+  color: #fff; /* Set the text color to white */
 }
 
 button {
@@ -19,6 +21,41 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+/* Form Container */
+.form-container {
+  background-color: rgba(255, 255, 255, 0.8); /* White background with 80% opacity */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 0 auto;
+  z-index: 1; /* Ensure the form is above the collage */
+  position: relative; /* Ensure proper stacking context */
+}
+
+/* Movie Collage */
+.movie-collage {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh; /* Ensure the collage takes up the full height of the viewport */
+  position: fixed; /* Use fixed positioning to cover the entire viewport */
+  top: 0;
+  left: 0;
+  z-index: -1; /* Ensure the collage is behind other content */
+}
+
+.movie-collage img {
+  width: 10%; /* Adjust the width to make the images smaller */
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+  margin: 0; /* Remove margin to eliminate space between images */
 }
 
 /* Movie Grid */

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { registerUser } from '../api';
+import { useNavigate } from 'react-router-dom';
+import { registerUser } from '../api'; // Use the registerUser function from the API
 import './styles.css';
 import MovieCollage from './MovieCollage';
 
@@ -7,17 +8,20 @@ function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await registerUser({ username, email, password });
-      alert('Registration successful! You can log in now.');
+      const response = await registerUser({ username, email, password });
+      console.log('User data received on registration:', response);
       setUsername('');
       setEmail('');
       setPassword('');
-    } catch (error) {
+      navigate('/login'); // Redirect to login page
+    } catch (err) {
+      console.error('Registration failed:', err);
       setError('Registration failed. Please try again.');
     }
   };
@@ -26,40 +30,45 @@ function Register() {
     <div className="register-page">
       <MovieCollage />
       <div className="form-container">
-        <h2>Register</h2>
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleSubmit} className="register-form">
+          <h2>Register</h2>
+          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
           <div className="form-group">
+            <label htmlFor="username">Username:</label>
             <input
               type="text"
+              id="username"
+              className="form-control"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username"
               required
-              className="form-control"
             />
           </div>
           <div className="form-group">
+            <label htmlFor="email">Email:</label>
             <input
               type="email"
+              id="email"
+              className="form-control"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
               required
-              className="form-control"
             />
           </div>
           <div className="form-group">
+            <label htmlFor="password">Password:</label>
             <input
               type="password"
+              id="password"
+              className="form-control"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
               required
-              className="form-control"
             />
           </div>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <button type="submit" className="btn">Register</button>
+          <button type="submit" className="btn btn-primary w-100">
+            Register
+          </button>
         </form>
       </div>
     </div>

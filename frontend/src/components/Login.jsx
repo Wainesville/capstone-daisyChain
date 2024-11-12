@@ -18,7 +18,7 @@ function Login({ handleLogin }) {
       handleLogin(response);
       setEmail('');
       setPassword('');
-      navigate('/watchlist');
+      navigate(`/user/${response.user.username}`); // Redirect to user page
     } catch (err) {
       console.error('Login failed:', err);
       setError('Login failed. Please check your credentials.');

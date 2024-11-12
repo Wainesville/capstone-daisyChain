@@ -50,12 +50,20 @@ const UserPage = () => {
         });
         setReviews(reviewsResponse.data);
 
-        const recommendationsResponse = await axios.get(`http://localhost:5000/api/recommendations`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setRecommendations(recommendationsResponse.data);
+        // Fetch recommendations details
+        if (userResponse.data.recommendations && userResponse.data.recommendations.length > 0) {
+          const recommendationsDetails = await Promise.all(
+            userResponse.data.recommendations.map(async (movieId) => {
+              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              return movieResponse.data;
+            })
+          );
+          setRecommendations(recommendationsDetails);
+        }
 
         // Set currently watching and up next
         if (watchlistResponse.data.length > 0) {
@@ -144,7 +152,7 @@ const UserPage = () => {
             recommendations.map((movie) => (
               <div key={movie.id} className="movie-card">
                 <Link to={`/movie/${movie.id}`}>
-                  <img src={movie.poster} alt={movie.title} />
+                  <img src={movie.thumbnail} alt={movie.title} />
                   <h3>{movie.title}</h3>
                 </Link>
               </div>

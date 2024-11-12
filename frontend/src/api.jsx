@@ -43,45 +43,50 @@ export const fetchMovieInfo = async (movieId) => {
 
 // Fetch Movie Reviews
 export const fetchMovieReviews = async (movieId) => {
-    try {
-      const response = await axios.get(`${API_SERVER_URL}/reviews/movie/${movieId}`);
-      return response.data; // Return the list of reviews for the movie
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        return []; // Return an empty array if no reviews are found
-      }
-      console.error('Error fetching movie reviews:', error.response ? error.response.data : error.message);
-      return []; // Return an empty array if there's an error
-    }
-  };
-
-  export const fetchWatchlist = async () => {
+  try {
     const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found in localStorage');
+    const response = await axios.get(`${API_SERVER_URL}/reviews/movie/${movieId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data; // Return the list of reviews for the movie
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return []; // Return an empty array if no reviews are found
+    }
+    console.error('Error fetching movie reviews:', error.response ? error.response.data : error.message);
+    return []; // Return an empty array if there's an error
+  }
+};
+
+export const fetchWatchlist = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('No token found in localStorage');
+    window.location.href = '/login'; // Redirect to login page
+    return;
+  }
+  try {
+    const response = await axios.get(`${API_SERVER_URL}/watchlist`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 403) {
+      console.error('Unauthorized: Invalid or expired token. Please log in again.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
       window.location.href = '/login'; // Redirect to login page
-      return;
+    } else {
+      console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
     }
-    try {
-      const response = await axios.get(`${API_SERVER_URL}/watchlist`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      if (error.response && error.response.status === 403) {
-        console.error('Unauthorized: Invalid or expired token. Please log in again.');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('username');
-        window.location.href = '/login'; // Redirect to login page
-      } else {
-        console.error('Error fetching watchlist:', error.response ? error.response.data : error.message);
-      }
-      throw error;
-    }
-  };
+    throw error;
+  }
+};
 
 // Add to Watchlist
 export const addToWatchlist = async (movieId, title, poster) => {
@@ -284,7 +289,7 @@ export const loginUser = async (credentials) => {
     const response = await axios.post(`${API_SERVER_URL}/auth/login`, credentials);
     console.log('Login response:', response.data); // Add this line
     localStorage.setItem('token', response.data.token); // Store token in local storage
-    return response.data; // Ensure that the response data includes the username
+    return response.data; // Ensure that the response data includes the user object
   } catch (error) {
     console.error('Error logging in:', error.response ? error.response.data : error.message);
     throw error;
@@ -339,12 +344,60 @@ export const fetchWatchlistByUserId = async (userId) => {
 
 // Fetch User Reviews
 export const fetchUserReviews = async (userId) => {
-  const response = await axios.get(`${API_SERVER_URL}/reviews/user/${userId}`);
-  return response.data;
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${API_SERVER_URL}/reviews/user/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user reviews:', error);
+    throw error;
+  }
 };
 
 // Fetch Recommendations
 export const fetchRecommendations = async () => {
-  const response = await axios.get(`${API_SERVER_URL}/recommendations`);
-  return response.data;
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('No token found in localStorage');
+    window.location.href = '/login'; // Redirect to login page
+    return;
+  }
+  try {
+    const response = await axios.get(`${API_SERVER_URL}/recommendations`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      console.error('Unauthorized: Invalid or expired token. Please log in again.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      window.location.href = '/login'; // Redirect to login page
+    } else {
+      console.error('Error fetching recommendations:', error.response ? error.response.data : error.message);
+    }
+    throw error;
+  }
+};
+
+export const fetchAllReviews = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${API_SERVER_URL}/reviews`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all reviews:', error);
+    return []; // Return an empty array if there's an error
+  }
 };

@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import './Homepage.css';
+import { fetchAllReviews } from '../api';
 
 const Homepage = () => {
   const [reviews, setReviews] = useState([]);
@@ -13,13 +13,28 @@ const Homepage = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/reviews');
-        setReviews(response.data);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/login'; // Redirect to login page
+          return;
+        }
 
-        await Promise.all(response.data.map(async (review) => {
+        const response = await fetchAllReviews();
+        setReviews(response);
+
+        await Promise.all(response.map(async (review) => {
           try {
-            const likesResponse = await axios.get(`http://localhost:5000/api/reviews/${review.id}/likes`);
-            const commentsResponse = await axios.get(`http://localhost:5000/api/reviews/${review.id}/comments`);
+            const likesResponse = await axios.get(`http://localhost:5000/api/reviews/${review.id}/likes`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            const commentsResponse = await axios.get(`http://localhost:5000/api/reviews/${review.id}/comments`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
             if (likesResponse.data.likes > 0) {
               setLikedReviews(prev => new Set(prev).add(review.id));
@@ -66,7 +81,11 @@ const Homepage = () => {
         setLikedReviews(prev => new Set(prev).add(review_id));
       }
 
-      const likesResponse = await axios.get(`http://localhost:5000/api/reviews/${review_id}/likes`);
+      const likesResponse = await axios.get(`http://localhost:5000/api/reviews/${review_id}/likes`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setReviews(prevReviews =>
         prevReviews.map(review =>
           review.id === review_id ? { ...review, likes: likesResponse.data.likes } : review
