@@ -69,7 +69,6 @@
   width: 100%; /* Full width */
 }
 
-/* Movie Card */
 .movie-card {
   background-color: #fff; /* White background */
   border-radius: 8px; /* Rounded corners */
@@ -112,4 +111,14 @@
 /* Remove Button Hover Effect */
 .movie-card button:hover {
   background-color: #c0392b; /* Darker red on hover */
+}
+
+/* First Spot Movie Card */
+.first-spot {
+  border: 3px solid #4caf50; /* Green border for first spot */
+}
+
+/* Second Spot Movie Card */
+.second-spot {
+  border: 3px solid #ff9800; /* Orange border for second spot */
 }

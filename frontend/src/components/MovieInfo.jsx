@@ -11,6 +11,9 @@ import axios from 'axios'; // Ensure axios is imported
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const BASE_URL = 'https://api.themoviedb.org/3';
+const API_KEY = '8feb4db25b7185d740785fc6b6f0e850'; // Replace with your actual API key
+
 function MovieInfo() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -50,6 +53,17 @@ function MovieInfo() {
 
                 const reviewsData = await fetchMovieReviews(id);
                 setReviews(reviewsData);
+
+                // Fetch trailer key
+                const trailerResponse = await axios.get(`${BASE_URL}/movie/${id}/videos`, {
+                    params: {
+                        api_key: API_KEY,
+                    },
+                });
+                const trailer = trailerResponse.data.results.find(video => video.type === 'Trailer');
+                if (trailer) {
+                    setTrailerKey(trailer.key);
+                }
             } catch (err) {
                 console.error('Failed to load movie information:', err.response ? err.response.data : err.message);
                 setError('Failed to load movie information.');
@@ -218,7 +232,9 @@ function MovieInfo() {
             )}
 
             <div className="movie-details">
-                <p className="overview">{movie.overview}</p>
+                <div className="overview-container">
+                    <p className="overview">{movie.overview}</p>
+                </div>
                 <p><strong>Runtime:</strong> {movie.runtime} minutes</p>
                 <p><strong>Rating:</strong> {movie.vote_average}/10</p>
                 <p><strong>Age Guide:</strong> {ageGuide}</p>

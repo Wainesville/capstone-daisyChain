@@ -52,14 +52,19 @@ function Watchlist() {
         },
       });
       setWatchlist((prevWatchlist) => {
-        const updatedWatchlist = prevWatchlist.map((movie) => ({
+        const updatedWatchlist = [...prevWatchlist];
+        const currentIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
+        const firstIndex = updatedWatchlist.findIndex((movie) => movie.currently_watching);
+
+        if (currentIndex !== -1 && firstIndex !== -1 && currentIndex !== firstIndex) {
+          // Swap the positions of the selected movie and the first movie
+          [updatedWatchlist[currentIndex], updatedWatchlist[firstIndex]] = [updatedWatchlist[firstIndex], updatedWatchlist[currentIndex]];
+        }
+
+        return updatedWatchlist.map((movie, index) => ({
           ...movie,
-          currently_watching: movie.movie_id === movieId,
+          currently_watching: index === 0,
         }));
-        const movieIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
-        const [movie] = updatedWatchlist.splice(movieIndex, 1);
-        updatedWatchlist.unshift(movie);
-        return updatedWatchlist;
       });
     } catch (error) {
       console.error('Failed to set currently watching:', error);
@@ -75,14 +80,19 @@ function Watchlist() {
         },
       });
       setWatchlist((prevWatchlist) => {
-        const updatedWatchlist = prevWatchlist.map((movie) => ({
+        const updatedWatchlist = [...prevWatchlist];
+        const currentIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
+        const secondIndex = updatedWatchlist.findIndex((movie) => movie.next_up);
+
+        if (currentIndex !== -1 && secondIndex !== -1 && currentIndex !== secondIndex) {
+          // Swap the positions of the selected movie and the second movie
+          [updatedWatchlist[currentIndex], updatedWatchlist[secondIndex]] = [updatedWatchlist[secondIndex], updatedWatchlist[currentIndex]];
+        }
+
+        return updatedWatchlist.map((movie, index) => ({
           ...movie,
-          next_up: movie.movie_id === movieId,
+          next_up: index === 1,
         }));
-        const movieIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
-        const [movie] = updatedWatchlist.splice(movieIndex, 1);
-        updatedWatchlist.splice(1, 0, movie);
-        return updatedWatchlist;
       });
     } catch (error) {
       console.error('Failed to set next up:', error);
@@ -93,8 +103,8 @@ function Watchlist() {
     <div className="watchlist">
       <h2>Your Watchlist</h2>
       <div className="movie-grid">
-        {watchlist.map((movie) => (
-          <div key={movie.movie_id} className="movie-card">
+        {watchlist.map((movie, index) => (
+          <div key={movie.movie_id} className={`movie-card ${index === 0 ? 'first-spot' : ''} ${index === 1 ? 'second-spot' : ''}`}>
             <Link to={`/movie/${movie.movie_id}`}>
               <img src={`https://image.tmdb.org/t/p/w500/${movie.poster}`} alt={movie.title} />
               <h3>{movie.title}</h3>

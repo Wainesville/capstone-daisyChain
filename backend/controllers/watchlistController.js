@@ -103,9 +103,25 @@ const setNextUp = async (req, res) => {
   }
 };
 
+
+// Fetch watchlist by user ID
+const getWatchlistByUserId = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const result = await pool.query('SELECT * FROM watchlist WHERE user_id = $1', [userId]);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('Error fetching watchlist:', err);
+    res.status(500).json({ error: 'Failed to fetch watchlist' });
+  }
+};
+
+
 module.exports = {
   getWatchlist,
   addToWatchlist,
+  getWatchlistByUserId,
   removeFromWatchlist,
   setCurrentlyWatching,
   setNextUp,

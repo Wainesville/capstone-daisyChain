@@ -35,7 +35,7 @@ const ViewUserPage = () => {
         console.log('Fetched user data:', userResponse.data);
         setUser(userResponse.data);
 
-        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist`, {
+        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist/${userResponse.data.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -103,61 +103,67 @@ const ViewUserPage = () => {
         <h1>{user.username}</h1>
       </div>
       <div className="user-info">
-        <div className="currently-watching">
-          <h2>Currently Watching</h2>
-          {currentlyWatching ? (
-            <div className="movie-card">
-              <Link to={`/movie/${currentlyWatching.id}`}>
-                <img src={currentlyWatching.poster} alt={currentlyWatching.title} />
-                <h3>{currentlyWatching.title}</h3>
-              </Link>
-            </div>
-          ) : (
-            <p>No movie currently watching</p>
-          )}
-        </div>
-        <div className="up-next">
-          <h2>Up Next</h2>
-          {upNext ? (
-            <div className="movie-card">
-              <Link to={`/movie/${upNext.id}`}>
-                <img src={upNext.poster} alt={upNext.title} />
-                <h3>{upNext.title}</h3>
-              </Link>
-            </div>
-          ) : (
-            <p>No movie up next</p>
-          )}
-        </div>
         <div className="top-movies">
           <h2>Top 5 Movies</h2>
-          {topMovies.length > 0 ? (
-            topMovies.map((movie) => (
-              <div key={movie.id} className="movie-card">
-                <Link to={`/movie/${movie.id}`}>
-                  <img src={movie.thumbnail} alt={movie.title} />
-                  <h3>{movie.title}</h3>
-                </Link>
-              </div>
-            ))
-          ) : (
-            <p>No top movies</p>
-          )}
+          <div className="movie-row">
+            {topMovies.length > 0 ? (
+              topMovies.map((movie) => (
+                <div key={movie.id} className="movie-card">
+                  <Link to={`/movie/${movie.id}`}>
+                    <img src={movie.thumbnail} alt={movie.title} />
+                    <h3>{movie.title}</h3>
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <p>No top movies</p>
+            )}
+          </div>
         </div>
         <div className="recommendations">
           <h2>Recommendations</h2>
-          {recommendations.length > 0 ? (
-            recommendations.map((movie) => (
-              <div key={movie.id} className="movie-card">
-                <Link to={`/movie/${movie.id}`}>
-                  <img src={movie.thumbnail} alt={movie.title} />
-                  <h3>{movie.title}</h3>
+          <div className="movie-row">
+            {recommendations.length > 0 ? (
+              recommendations.map((movie) => (
+                <div key={movie.id} className="movie-card">
+                  <Link to={`/movie/${movie.id}`}>
+                    <img src={movie.thumbnail} alt={movie.title} />
+                    <h3>{movie.title}</h3>
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <p>No recommendations</p>
+            )}
+          </div>
+        </div>
+        <div className="currently-watching-up-next">
+          <div className="currently-watching">
+            <h2>Currently Watching</h2>
+            {currentlyWatching ? (
+              <div className="movie-card">
+                <Link to={`/movie/${currentlyWatching.id}`}>
+                  <img src={currentlyWatching.poster} alt={currentlyWatching.title} />
+                  <h3>{currentlyWatching.title}</h3>
                 </Link>
               </div>
-            ))
-          ) : (
-            <p>No recommendations</p>
-          )}
+            ) : (
+              <p>No movie currently watching</p>
+            )}
+          </div>
+          <div className="up-next">
+            <h2>Up Next</h2>
+            {upNext ? (
+              <div className="movie-card">
+                <Link to={`/movie/${upNext.id}`}>
+                  <img src={upNext.poster} alt={upNext.title} />
+                  <h3>{upNext.title}</h3>
+                </Link>
+              </div>
+            ) : (
+              <p>No movie up next</p>
+            )}
+          </div>
         </div>
       </div>
       <div className="main-content">
@@ -167,8 +173,9 @@ const ViewUserPage = () => {
             reviews.map((review) => (
               <div key={review.id} className="review-card">
                 <h3>{review.movie_title}</h3>
-                <p>{review.content}</p>
-                <p>Rating: {review.rating}/10</p>
+                <img src={review.thumbnail} alt={`${review.movie_title} poster`} className="review-poster" />
+                <p className="review-content">{review.content.charAt(0).toUpperCase() + review.content.slice(1)}</p>
+                <span className="review-rating">{review.rating}/10</span>
               </div>
             ))
           ) : (

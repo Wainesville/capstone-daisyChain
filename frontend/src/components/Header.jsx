@@ -12,7 +12,7 @@ function Header({ isLoggedIn, handleLogout, username }) {
 
   return (
     <header className="header">
-      <h1>Movie Tracker</h1>
+      <h1>Daisy Chain</h1>
       <nav>
         <ul>
           {!isLoggedIn ? (
