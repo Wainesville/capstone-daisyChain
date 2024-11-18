@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     fetchMovieInfo,
     fetchWatchlist,
@@ -7,16 +7,15 @@ import {
     fetchMovieReviews,
 } from '../api';
 import './MOvieInfo.css';
-import axios from 'axios'; // Ensure axios is imported
+import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
-const API_KEY = '8feb4db25b7185d740785fc6b6f0e850'; // Replace with your actual API key
+const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
 
-function MovieInfo() {
+function MovieInfo({ onClose }) {
     const { id } = useParams();
-    const navigate = useNavigate();
     const [movie, setMovie] = useState(null);
     const [trailerKey, setTrailerKey] = useState('');
     const [inWatchlist, setInWatchlist] = useState(false);
@@ -145,7 +144,6 @@ function MovieInfo() {
             setComment('');
             setRecommendation(null);
             setRating(5);
-            navigate('/'); // Redirect to homepage after submitting
         } catch (err) {
             console.error('Failed to submit comment', err.response ? err.response.data : err.message);
         }
@@ -207,6 +205,7 @@ function MovieInfo() {
                 pauseOnHover
                 style={{ zIndex: 9999 }} // Ensure the ToastContainer is on top
             />
+            <button onClick={onClose} className="close-button">Close</button>
             <div className="movie-header">
                 <h1 className="movie-title">{movie.title}</h1>
                 <img

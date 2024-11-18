@@ -5,7 +5,7 @@ import './styles.css';
 import MovieCollage from './MovieCollage';
 
 function Login({ handleLogin }) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState(''); // Use username instead of email
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -13,10 +13,10 @@ function Login({ handleLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await loginUser({ email, password });
+      const response = await loginUser({ username, password }); // Use username instead of email
       console.log('User data received on login:', response);
       handleLogin(response);
-      setEmail('');
+      setUsername(''); // Reset username field
       setPassword('');
       navigate(`/user/${response.user.username}`); // Redirect to user page
     } catch (err) {
@@ -33,13 +33,13 @@ function Login({ handleLogin }) {
           <h2>Login</h2>
           {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
           <div className="form-group">
-            <label htmlFor="email">Email:</label>
+            <label htmlFor="username">Username:</label>
             <input
-              type="email"
-              id="email"
+              type="text"
+              id="username"
               className="form-control"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>

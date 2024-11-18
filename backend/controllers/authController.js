@@ -1,63 +1,70 @@
+const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pool = require('../db');
 
 // Register User
 const registerUser = async (req, res) => {
-  const { username, email, password } = req.body;
-  
+  const { username, password, email } = req.body;
+
+  // Validate required fields
+  if (!username || !password || !email) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
   try {
-    // Check if user exists by either username or email
-    const userExists = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
-    if (userExists.rows.length > 0) {
-      return res.status(400).json({ error: 'Username or Email already exists' });
-    }
-
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert new user into the database
-    await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3)',
-      [username, email, hashedPassword]
+    const result = await pool.query(
+      'INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING *',
+      [username, hashedPassword, email]
     );
 
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error('Failed to register user');
+    }
+
     res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    console.error(err.message);
+  } catch (error) {
+    console.error('Error registering user:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
 
+// Login User
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
+
+  // Validate required fields
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
   try {
-    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    console.log('Received login request:', { username, password });
 
-    if (user.rows.length === 0) {
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    console.log('Database query result:', result.rows);
+
+    if (!result.rows || result.rows.length === 0) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    const validPassword = await bcrypt.compare(password, user.rows[0].password);
-    if (!validPassword) {
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match result:', isMatch);
+
+    if (!isMatch) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.rows[0].id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log('Generated JWT token:', token);
 
-    console.log('Token generated:', token);
-    console.log('User data:', { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email });
-
-    return res.status(200).json({ token, user: { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email } });
-  } catch (err) {
-    console.error(err.message);
-    return res.status(500).json({ error: 'Server error' });
+    res.status(200).json({ token, user: { id: user.id, username: user.username } });
+  } catch (error) {
+    console.error('Error logging in user:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
-
 
 module.exports = {
   registerUser,

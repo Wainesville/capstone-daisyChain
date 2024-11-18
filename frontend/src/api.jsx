@@ -10,6 +10,21 @@ const deduplicateResults = (results) => {
     .map(id => results.find(movie => movie.id === id));
 };
 
+// Helper function to fetch multiple pages
+const fetchMultiplePages = async (url, params, pages = 2) => {
+  try {
+    const results = [];
+    for (let page = 1; page <= pages; page++) {
+      const response = await axios.get(url, { params: { ...params, page } });
+      results.push(...response.data.results);
+    }
+    return deduplicateResults(results).slice(0, 24); // Return the first 24 unique results
+  } catch (error) {
+    console.error(`Error fetching data from ${url}:`, error.response ? error.response.data : error.message);
+    return [];
+  }
+};
+
 // Fetch Genres
 export const fetchGenres = async () => {
   try {
@@ -60,6 +75,7 @@ export const fetchMovieReviews = async (movieId) => {
   }
 };
 
+// Fetch Watchlist
 export const fetchWatchlist = async () => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -122,6 +138,7 @@ export const addToWatchlist = async (movieId, title, poster) => {
   }
 };
 
+// Remove from Watchlist
 export const removeFromWatchlist = async (movieId) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -173,99 +190,17 @@ export const fetchMovieImages = async (movieId) => {
 
 // Fetch Trending Movies (with pagination)
 export const fetchTrendingMovies = async (page = 1) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/trending/movie/day`, {
-      params: {
-        api_key: API_KEY,
-        page, // Pass the page number
-      },
-    });
-
-    // Fetch the next page to get more results
-    const secondPageResponse = await axios.get(`${BASE_URL}/trending/movie/day`, {
-      params: {
-        api_key: API_KEY,
-        page: page + 1, // Fetch the next page
-      },
-    });
-
-    // Combine both pages and deduplicate results
-    const combinedResults = [
-      ...response.data.results,
-      ...secondPageResponse.data.results,
-    ];
-
-    return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
-  } catch (error) {
-    console.error('Error fetching trending movies:', error.response ? error.response.data : error.message);
-    return [];
-  }
+  return fetchMultiplePages(`${BASE_URL}/trending/movie/day`, { api_key: API_KEY }, 2);
 };
 
 // Fetch Upcoming Movies (with pagination)
 export const fetchUpcomingMovies = async (page = 1) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/movie/upcoming`, {
-      params: {
-        api_key: API_KEY,
-        page, // Pass the page number
-      },
-    });
-
-    // Fetch the next page to get more results
-    const secondPageResponse = await axios.get(`${BASE_URL}/movie/upcoming`, {
-      params: {
-        api_key: API_KEY,
-        page: page + 1, // Fetch the next page
-      },
-    });
-
-    // Combine both pages and deduplicate results
-    const combinedResults = [
-      ...response.data.results,
-      ...secondPageResponse.data.results,
-    ];
-
-    return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
-  } catch (error) {
-    console.error('Error fetching upcoming movies:', error.response ? error.response.data : error.message);
-    return [];
-  }
+  return fetchMultiplePages(`${BASE_URL}/movie/upcoming`, { api_key: API_KEY }, 2);
 };
 
 // Fetch Movies by Genre (with pagination)
 export const fetchMoviesByGenre = async (genreId, page = 1) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/discover/movie`, {
-      params: {
-        api_key: API_KEY,
-        with_genres: genreId,
-        sort_by: 'popularity.desc', // Sort by popularity
-        page, // Pass the page number
-      },
-    });
-
-    // Fetch the next page to get more results
-    const secondPageResponse = await axios.get(`${BASE_URL}/discover/movie`, {
-      params: {
-        api_key: API_KEY,
-        with_genres: genreId,
-        sort_by: 'popularity.desc',
-        page: page + 1, // Fetch the next page
-      },
-    });
-
-    // Combine both pages and return the first 24 results
-    const combinedResults = [
-      ...response.data.results,
-      ...secondPageResponse.data.results,
-    ];
-
-    return deduplicateResults(combinedResults).slice(0, 24); // Return the first 24 unique results
-  } catch (error) {
-    console.error('Error fetching movies by genre:', error.response ? error.response.data : error.message);
-    return [];
-  }
+  return fetchMultiplePages(`${BASE_URL}/discover/movie`, { api_key: API_KEY, with_genres: genreId, sort_by: 'popularity.desc' }, 2);
 };
 
 // Search Movies
@@ -284,6 +219,7 @@ export const searchMovies = async (query) => {
   }
 };
 
+// Login User
 export const loginUser = async (credentials) => {
   try {
     const response = await axios.post(`${API_SERVER_URL}/auth/login`, credentials);
@@ -338,8 +274,13 @@ export const fetchUserData = async (username) => {
 
 // Fetch Watchlist by User ID
 export const fetchWatchlistByUserId = async (userId) => {
-  const response = await axios.get(`${API_SERVER_URL}/watchlist/${userId}`);
-  return response.data;
+  try {
+    const response = await axios.get(`${API_SERVER_URL}/watchlist/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching watchlist by user ID:', error.response ? error.response.data : error.message);
+    return [];
+  }
 };
 
 // Fetch User Reviews
@@ -387,6 +328,7 @@ export const fetchRecommendations = async () => {
   }
 };
 
+// Fetch All Reviews
 export const fetchAllReviews = async () => {
   try {
     const token = localStorage.getItem('token');

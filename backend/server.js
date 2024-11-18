@@ -15,7 +15,7 @@ const upload = multer({ dest: 'uploads/' }); // You can customize this path
 
 // Import Routes
 const authRoutes = require('./routes/auth');
-const watchlistRoutes = require('./routes/watchlist');
+const watchlistRoutes = require('./routes/watchlistRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const commentsRoutes = require('./routes/commentsRoutes');
 const reviewRoutes = require('./routes/reviewRoutes'); // Ensure reviewRoutes is imported

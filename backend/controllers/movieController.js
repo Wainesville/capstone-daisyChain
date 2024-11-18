@@ -13,7 +13,7 @@ const getAllMovies = async (req, res) => {
 
 // Create a new review
 const createReview = async (req, res) => {
-  const { user_id, movie_id, content, recommendation, movie_title, thumbnail, logo } = req.body;
+  const { user_id, movie_id, content, recommendation, movie_title, thumbnail } = req.body;
 
   // Validate required fields
   if (!user_id || !movie_id || !content || !movie_title || !thumbnail) {
@@ -24,11 +24,11 @@ const createReview = async (req, res) => {
     // Check if the movie exists in the database
     const movieCheck = await pool.query('SELECT * FROM movies WHERE id = $1', [movie_id]);
 
-    // If the movie doesn't exist, insert it with title, thumbnail, and logo
+    // If the movie doesn't exist, insert it with title and thumbnail
     if (movieCheck.rows.length === 0) {
       await pool.query(
-        'INSERT INTO movies (id, title, thumbnail, logo) VALUES ($1, $2, $3, $4)',
-        [movie_id, movie_title, thumbnail, logo]
+        'INSERT INTO movies (id, title, thumbnail) VALUES ($1, $2, $3)',
+        [movie_id, movie_title, thumbnail]
       );
     }
 
@@ -38,6 +38,10 @@ const createReview = async (req, res) => {
       [user_id, movie_id, content, recommendation]
     );
 
+    if (!newReview.rows || newReview.rows.length === 0) {
+      throw new Error('Failed to create review');
+    }
+
     res.status(201).json(newReview.rows[0]);
   } catch (error) {
     console.error('Error creating review:', error);
@@ -45,13 +49,13 @@ const createReview = async (req, res) => {
   }
 };
 
-// Get reviews for a specific movie, including the movie logo
+// Get reviews for a specific movie
 const getReviewsByMovieId = async (req, res) => {
   const { movie_id } = req.params;
 
   try {
     const result = await pool.query(`
-      SELECT r.id, r.user_id, r.content, r.created_at, r.recommendation, m.thumbnail, m.title AS movie_title, m.logo
+      SELECT r.id, r.user_id, r.content, r.created_at, r.recommendation, m.thumbnail, m.title AS movie_title
       FROM reviews r
       JOIN movies m ON r.movie_id = m.id 
       WHERE r.movie_id = $1
@@ -75,7 +79,7 @@ const getMovieById = async (req, res) => {
       return res.status(404).json({ error: 'Movie not found' });
     }
 
-    res.json(movie.rows[0]);
+    res.status(200).json(movie.rows[0]);
   } catch (err) {
     console.error('Error fetching movie:', err);
     res.status(500).json({ error: 'Failed to fetch movie' });

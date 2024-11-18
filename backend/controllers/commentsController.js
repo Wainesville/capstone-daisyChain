@@ -1,43 +1,46 @@
-const db = require('../db'); // Ensure correct DB connection
+const pool = require('../db');
 
-// Create a new comment for a review
+// Create a new comment
 const createComment = async (req, res) => {
-    const { review_id } = req.params;
-    const { user_id, content } = req.body;
+  const { review_id } = req.params;
+  const { user_id, content } = req.body;
 
-    if (!user_id || !content) {
-        return res.status(400).json({ error: 'Missing required fields: user_id or content' });
+  // Validate required fields
+  if (!user_id || !content) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO comments (review_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
+      [review_id, user_id, content]
+    );
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error('Failed to post comment');
     }
 
-    try {
-        const newComment = await db.query(
-            'INSERT INTO comments (user_id, review_id, content) VALUES ($1, $2, $3) RETURNING *',
-            [user_id, review_id, content]
-        );
-        res.status(201).json(newComment.rows[0]);
-    } catch (error) {
-        console.error('Error posting comment:', error);
-        res.status(500).json({ error: 'Failed to post comment' });
-    }
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error posting comment:', err);
+    res.status(500).json({ error: 'Failed to post comment' });
+  }
 };
 
-// Fetch all comments for a specific review
+// Get comments by review ID
 const getCommentsByReviewId = async (req, res) => {
-    const { review_id } = req.params;
+  const { review_id } = req.params;
 
-    try {
-        const comments = await db.query(
-            'SELECT c.id, c.user_id, u.username, c.content, c.created_at FROM comments c JOIN users u ON c.user_id = u.id WHERE c.review_id = $1 ORDER BY c.created_at ASC',
-            [review_id]
-        );
-        res.json(comments.rows);
-    } catch (error) {
-        console.error('Error fetching comments:', error);
-        res.status(500).json({ error: 'Failed to fetch comments' });
-    }
+  try {
+    const result = await pool.query('SELECT * FROM comments WHERE review_id = $1', [review_id]);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('Error fetching comments:', err);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
 };
 
 module.exports = {
-    createComment,
-    getCommentsByReviewId,
+  createComment,
+  getCommentsByReviewId,
 };

@@ -159,6 +159,9 @@ function EditProfile() {
           <div className="form-group">
             <label htmlFor="profilePicture">Profile Picture</label>
             <input type="file" id="profilePicture" onChange={handleProfilePictureChange} />
+            {profilePicture && (
+              <img src={URL.createObjectURL(profilePicture)} alt="Profile Picture" />
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="bio">Bio</label>

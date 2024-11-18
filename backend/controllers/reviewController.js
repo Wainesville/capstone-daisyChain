@@ -73,7 +73,7 @@ const likeReview = async (req, res) => {
       'INSERT INTO review_likes (review_id, user_id) VALUES ($1, $2) RETURNING *',
       [reviewId, userId]
     );
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ message: 'Review liked successfully' });
   } catch (err) {
     console.error('Error liking review:', err);
     res.status(500).json({ error: 'Failed to like review' });
@@ -102,16 +102,44 @@ const unlikeReview = async (req, res) => {
 
 // Create a review
 const createReview = async (req, res) => {
-  const { user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo } = req.body;
+  const { user_id, movie_id, content, recommendation, rating, movie_title, thumbnail } = req.body;
+
+  // Validate required fields
+  if (!user_id || !movie_id || !content || !movie_title || !thumbnail) {
+    console.error('Missing required fields');
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
   try {
-    const result = await pool.query(
-      'INSERT INTO reviews (user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [user_id, movie_id, content, recommendation, rating, movie_title, thumbnail, logo]
+    console.log('Checking if movie exists in the database');
+    // Check if the movie exists in the database
+    const movieCheck = await pool.query('SELECT * FROM movies WHERE id = $1', [movie_id]);
+
+    // If the movie doesn't exist, insert it with title and thumbnail
+    if (movieCheck.rows.length === 0) {
+      console.log('Movie does not exist, inserting new movie');
+      await pool.query(
+        'INSERT INTO movies (id, title, thumbnail) VALUES ($1, $2, $3)',
+        [movie_id, movie_title, thumbnail]
+      );
+    }
+
+    console.log('Inserting new review');
+    // Insert the new review
+    const newReview = await pool.query(
+      'INSERT INTO reviews (user_id, movie_id, content, recommendation, rating, movie_title, thumbnail) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [user_id, movie_id, content, recommendation, rating, movie_title, thumbnail]
     );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error('Error creating review:', err);
+
+    if (!newReview.rows || newReview.rows.length === 0) {
+      console.error('Failed to create review');
+      throw new Error('Failed to create review');
+    }
+
+    console.log('Review created successfully');
+    res.status(201).json(newReview.rows[0]);
+  } catch (error) {
+    console.error('Error creating review:', error);
     res.status(500).json({ error: 'Failed to create review' });
   }
 };

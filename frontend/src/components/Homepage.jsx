@@ -44,6 +44,12 @@ const Homepage = () => {
               ...prev,
               [review.id]: commentsResponse.data,
             }));
+
+            setReviews(prevReviews =>
+              prevReviews.map(r =>
+                r.id === review.id ? { ...r, likes: likesResponse.data.likes } : r
+              )
+            );
           } catch (err) {
             console.error(`Failed to fetch likes or comments for review ID: ${review.id}`, err);
           }
