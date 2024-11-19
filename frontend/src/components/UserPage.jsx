@@ -3,8 +3,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './UserPage.css';
 
+const BASE_URL = 'https://api.themoviedb.org/3';
+const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
+
 const UserPage = () => {
   const { username } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -13,7 +17,6 @@ const UserPage = () => {
   const [topMovies, setTopMovies] = useState([]);
   const [upNext, setUpNext] = useState(null);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   const defaultProfilePicture = 'https://cdn.pixabay.com/photo/2019/08/11/18/59/icon-4399701_1280.png'; // Default image URL
 
@@ -36,7 +39,7 @@ const UserPage = () => {
         console.log('Fetched user data:', userResponse.data);
         setUser(userResponse.data);
 
-        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist`, {
+        const watchlistResponse = await axios.get(`http://localhost:5000/api/watchlist/${userResponse.data.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -54,15 +57,24 @@ const UserPage = () => {
         if (userResponse.data.recommendations && userResponse.data.recommendations.length > 0) {
           const recommendationsDetails = await Promise.all(
             userResponse.data.recommendations.map(async (movieId) => {
-              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              return movieResponse.data;
+              try {
+                const movieResponse = await axios.get(`${BASE_URL}/movie/${movieId}`, {
+                  params: {
+                    api_key: API_KEY,
+                  },
+                });
+                console.log('Fetched movie data:', movieResponse.data);
+                return {
+                  ...movieResponse.data,
+                  thumbnail: `https://image.tmdb.org/t/p/w500/${movieResponse.data.poster_path}`,
+                };
+              } catch (error) {
+                console.error(`Failed to fetch movie with ID ${movieId}:`, error);
+                return null;
+              }
             })
           );
-          setRecommendations(recommendationsDetails);
+          setRecommendations(recommendationsDetails.filter(movie => movie !== null));
         }
 
         // Set currently watching and up next
@@ -75,15 +87,24 @@ const UserPage = () => {
         if (userResponse.data.top_movies && userResponse.data.top_movies.length > 0) {
           const topMoviesDetails = await Promise.all(
             userResponse.data.top_movies.map(async (movieId) => {
-              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              return movieResponse.data;
+              try {
+                const movieResponse = await axios.get(`${BASE_URL}/movie/${movieId}`, {
+                  params: {
+                    api_key: API_KEY,
+                  },
+                });
+                console.log('Fetched movie data:', movieResponse.data);
+                return {
+                  ...movieResponse.data,
+                  thumbnail: `https://image.tmdb.org/t/p/w500/${movieResponse.data.poster_path}`,
+                };
+              } catch (error) {
+                console.error(`Failed to fetch movie with ID ${movieId}:`, error);
+                return null;
+              }
             })
           );
-          setTopMovies(topMoviesDetails);
+          setTopMovies(topMoviesDetails.filter(movie => movie !== null));
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -94,6 +115,86 @@ const UserPage = () => {
     fetchUserData();
   }, [username]);
 
+  const handleRemoveRecommendation = async (movieId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return;
+      }
+
+      await axios.post('http://localhost:5000/api/recommendations/remove', {
+        movieId,
+        userId: user.id,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Update the recommendations state
+      setRecommendations(recommendations.filter(movie => movie.id !== movieId));
+      console.log('Recommendation removed successfully');
+    } catch (error) {
+      console.error('Failed to remove recommendation:', error);
+    }
+  };
+
+  const handleMovieClick = async (movieId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return;
+      }
+
+      let movieResponse;
+      try {
+        // Check if the movie exists in the database
+        movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // Fetch movie details from external API if not found in the database
+          const externalMovieResponse = await axios.get(`${BASE_URL}/movie/${movieId}`, {
+            params: {
+              api_key: API_KEY,
+            },
+          });
+
+          const movie = externalMovieResponse.data;
+
+          // Add the movie to the database
+          try {
+            await axios.post('http://localhost:5000/api/movies', {
+              id: movie.id,
+              title: movie.title,
+              thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
+            }, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            console.log('Movie added to the database:', movie);
+          } catch (postError) {
+            console.error('Failed to add movie to the database:', postError);
+          }
+        } else {
+          throw error;
+        }
+      }
+
+      // Navigate to the MovieInfo page
+      navigate(`/movie/${movieId}`);
+    } catch (error) {
+      console.error('Failed to handle movie click:', error);
+    }
+  };
+
   if (error) return <div>{error}</div>;
   if (!user) return <div>Loading...</div>;
 
@@ -101,20 +202,20 @@ const UserPage = () => {
     <div className="user-page">
       <div className="user-header">
         <img src={user.profile_picture || defaultProfilePicture} alt={`${user.username}'s profile`} className="user-image" />
-        <h1>{user.username}</h1>
-        <button onClick={() => navigate(`/edit-profile`)}>Edit Profile</button>
+        <div className="user-info">
+          <h1>{user.username}</h1>
+          <p className="user-bio">{user.bio}</p>
+        </div>
       </div>
-      <div className="user-info">
+      <div className="user-content">
         <div className="top-movies">
           <h2>Top 5 Movies</h2>
           <div className="movie-row">
             {topMovies.length > 0 ? (
               topMovies.map((movie) => (
-                <div key={movie.id} className="movie-card">
-                  <Link to={`/movie/${movie.id}`}>
-                    <img src={movie.thumbnail} alt={movie.title} />
-                    <h3>{movie.title}</h3>
-                  </Link>
+                <div key={movie.id} className="movie-card" onClick={() => handleMovieClick(movie.id)}>
+                  <img src={movie.thumbnail} alt={movie.title} />
+                  <h3>{movie.title}</h3>
                 </div>
               ))
             ) : (
@@ -127,11 +228,10 @@ const UserPage = () => {
           <div className="movie-row">
             {recommendations.length > 0 ? (
               recommendations.map((movie) => (
-                <div key={movie.id} className="movie-card">
-                  <Link to={`/movie/${movie.id}`}>
-                    <img src={movie.thumbnail} alt={movie.title} />
-                    <h3>{movie.title}</h3>
-                  </Link>
+                <div key={movie.id} className="movie-card" onClick={() => handleMovieClick(movie.id)}>
+                  <img src={movie.thumbnail} alt={movie.title} />
+                  <h3>{movie.title}</h3>
+                  <button onClick={(e) => { e.stopPropagation(); handleRemoveRecommendation(movie.id); }}>Remove</button>
                 </div>
               ))
             ) : (
@@ -143,11 +243,9 @@ const UserPage = () => {
           <div className="currently-watching">
             <h2>Currently Watching</h2>
             {currentlyWatching ? (
-              <div className="movie-card">
-                <Link to={`/movie/${currentlyWatching.id}`}>
-                  <img src={currentlyWatching.poster} alt={currentlyWatching.title} />
-                  <h3>{currentlyWatching.title}</h3>
-                </Link>
+              <div className="movie-card" onClick={() => handleMovieClick(currentlyWatching.movie_id)}>
+                <img src={`https://image.tmdb.org/t/p/w500/${currentlyWatching.poster}`} alt={currentlyWatching.title} />
+                <h3>{currentlyWatching.title}</h3>
               </div>
             ) : (
               <p>No movie currently watching</p>
@@ -156,11 +254,9 @@ const UserPage = () => {
           <div className="up-next">
             <h2>Up Next</h2>
             {upNext ? (
-              <div className="movie-card">
-                <Link to={`/movie/${upNext.id}`}>
-                  <img src={upNext.poster} alt={upNext.title} />
-                  <h3>{upNext.title}</h3>
-                </Link>
+              <div className="movie-card" onClick={() => handleMovieClick(upNext.movie_id)}>
+                <img src={`https://image.tmdb.org/t/p/w500/${upNext.poster}`} alt={upNext.title} />
+                <h3>{upNext.title}</h3>
               </div>
             ) : (
               <p>No movie up next</p>
@@ -181,8 +277,8 @@ const UserPage = () => {
               </div>
             ))
           ) : (
-            <p>No reviews</p>
-          )}
+              <p>No reviews</p>
+            )}
         </div>
       </div>
     </div>

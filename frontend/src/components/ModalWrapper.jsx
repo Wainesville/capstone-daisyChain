@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Modal from 'react-modal';
 
 Modal.setAppElement('#root'); // Set the root element for accessibility
 
 const ModalWrapper = ({ isOpen, onRequestClose, children }) => {
+    useEffect(() => {
+        const rootElement = document.getElementById('root');
+        if (isOpen) {
+            rootElement.setAttribute('inert', '');
+        } else {
+            rootElement.removeAttribute('inert');
+        }
+    }, [isOpen]);
+
     return (
         <Modal
             isOpen={isOpen}

@@ -77,10 +77,35 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+
+// Get current user
+const getCurrentUser = async (req, res) => {
+  const userId = req.user.userId; // Ensure this matches the decoded token structure
+  console.log('Fetching user with ID:', userId);
+
+  try {
+    const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+
+    if (userResult.rows.length === 0) {
+      console.log('User not found with ID:', userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+    console.log('User found:', user);
+    res.status(200).json(user);
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+};
+
+
 module.exports = {
   getUserByUsername,
   getNewestUsers,
   searchUsers,
   getUserProfile,
   updateUserProfile,
+  getCurrentUser,
 };

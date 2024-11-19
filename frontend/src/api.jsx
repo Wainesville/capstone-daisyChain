@@ -18,7 +18,7 @@ const fetchMultiplePages = async (url, params, pages = 2) => {
       const response = await axios.get(url, { params: { ...params, page } });
       results.push(...response.data.results);
     }
-    return deduplicateResults(results).slice(0, 24); // Return the first 24 unique results
+    return deduplicateResults(results).slice(0, 60); // Return the first 50 unique results
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error.response ? error.response.data : error.message);
     return [];
@@ -190,17 +190,17 @@ export const fetchMovieImages = async (movieId) => {
 
 // Fetch Trending Movies (with pagination)
 export const fetchTrendingMovies = async (page = 1) => {
-  return fetchMultiplePages(`${BASE_URL}/trending/movie/day`, { api_key: API_KEY }, 2);
+  return fetchMultiplePages(`${BASE_URL}/trending/movie/day`, { api_key: API_KEY }, 3);
 };
 
 // Fetch Upcoming Movies (with pagination)
 export const fetchUpcomingMovies = async (page = 1) => {
-  return fetchMultiplePages(`${BASE_URL}/movie/upcoming`, { api_key: API_KEY }, 2);
+  return fetchMultiplePages(`${BASE_URL}/movie/upcoming`, { api_key: API_KEY }, 3);
 };
 
 // Fetch Movies by Genre (with pagination)
 export const fetchMoviesByGenre = async (genreId, page = 1) => {
-  return fetchMultiplePages(`${BASE_URL}/discover/movie`, { api_key: API_KEY, with_genres: genreId, sort_by: 'popularity.desc' }, 2);
+  return fetchMultiplePages(`${BASE_URL}/discover/movie`, { api_key: API_KEY, with_genres: genreId, sort_by: 'popularity.desc' }, 3);
 };
 
 // Search Movies

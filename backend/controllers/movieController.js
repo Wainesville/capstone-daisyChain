@@ -71,17 +71,20 @@ const getReviewsByMovieId = async (req, res) => {
 // Get Movie by ID
 const getMovieById = async (req, res) => {
   const { id } = req.params;
+  console.log('Fetching movie with ID:', id);
 
   try {
-    const movie = await pool.query('SELECT * FROM movies WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM movies WHERE id = $1', [id]);
 
-    if (movie.rows.length === 0) {
+    if (result.rows.length === 0) {
+      console.log('Movie not found with ID:', id);
       return res.status(404).json({ error: 'Movie not found' });
     }
 
-    res.status(200).json(movie.rows[0]);
-  } catch (err) {
-    console.error('Error fetching movie:', err);
+    console.log('Movie found:', result.rows[0]);
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching movie:', error);
     res.status(500).json({ error: 'Failed to fetch movie' });
   }
 };

@@ -13,34 +13,30 @@ const getWatchlist = async (req, res) => {
   }
 };
 
-// Add Movie to Watchlist
+
 const addToWatchlist = async (req, res) => {
-  const { movieId, title, poster, logo } = req.body;
-  const userId = req.user.userId;
+  const { movieId, title, poster } = req.body;
+
+  // Validate required fields
+  if (!movieId || !title || !poster) {
+    console.error('Missing required fields');
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
   try {
-    console.log('Adding movie to watchlist:', { movieId, title, poster, logo, userId });
-
-    // Check if the movie exists in the database
-    const movieCheck = await pool.query('SELECT * FROM movies WHERE id = $1', [movieId]);
-
-    // If the movie doesn't exist, insert it
-    if (movieCheck.rows.length === 0) {
-      await pool.query(
-        'INSERT INTO movies (id, title, thumbnail, logo) VALUES ($1, $2, $3, $4)',
-        [movieId, title, poster, logo]
-      );
-    }
-
-    // Add the movie to the user's watchlist
-    await pool.query(
-      'INSERT INTO watchlist (user_id, movie_id, title, poster) VALUES ($1, $2, $3, $4)',
-      [userId, movieId, title, poster]
+    // Insert movie into the watchlist
+    const result = await pool.query(
+      'INSERT INTO watchlist (movie_id, title, poster, created_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING *',
+      [movieId, title, poster]
     );
 
-    res.status(201).json({ message: 'Movie added to watchlist' });
-  } catch (error) {
-    console.error('Error adding movie to watchlist:', error);
+    if (result.rows.length === 0) {
+      throw new Error('Failed to add movie to watchlist');
+    }
+
+    res.status(201).json({ message: 'Movie added to watchlist successfully' });
+  } catch (err) {
+    console.error('Error adding movie to watchlist:', err);
     res.status(500).json({ error: 'Failed to add movie to watchlist' });
   }
 };
