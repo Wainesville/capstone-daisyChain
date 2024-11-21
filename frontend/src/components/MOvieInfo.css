@@ -2,7 +2,7 @@
   background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
   border-radius: 10px; /* Add rounded corners */
   padding: 20px; /* Add padding */
-  color: #fff; /* Set text color to white */
+  color: #000000; /* Set text color to white */
 }
 
 .movie-header {
@@ -98,8 +98,13 @@
   cursor: pointer;
 }
 
-.thumb-button.active {
-  background-color: #007bff;
+.thumb-button-down.active {
+  background-color: #ff0000;
+  color: #fff;
+}
+
+.thumb-button-up.active {
+  background-color: #0cef3e;
   color: #fff;
 }
 

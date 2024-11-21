@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './MOvieInfo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { createReview, addToWatchlist, removeFromWatchlist } from '../api'; // Import the createReview, addToWatchlist, and removeFromWatchlist functions
 
 const BASE_URL = 'https://api.themoviedb.org/3';
 const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
@@ -11,6 +12,7 @@ const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
 const MovieInfo = ({ id: propId, onClose }) => {
   const { id: paramId } = useParams();
   const id = propId || paramId;
+  const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [trailerKey, setTrailerKey] = useState('');
   const [inWatchlist, setInWatchlist] = useState(false);
@@ -82,25 +84,21 @@ const MovieInfo = ({ id: propId, onClose }) => {
       }
 
       if (inWatchlist) {
-        await axios.delete(`http://localhost:5000/api/watchlist/remove/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setInWatchlist(false);
-        toast.success('Movie removed from watchlist!');
+        const success = await removeFromWatchlist(id);
+        if (success) {
+          setInWatchlist(false);
+          toast.success('Movie removed from watchlist!');
+        } else {
+          toast.error('Failed to remove movie from watchlist.');
+        }
       } else {
-        await axios.post('http://localhost:5000/api/watchlist/add', {
-          movieId: movie.id,
-          title: movie.title,
-          poster: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setInWatchlist(true);
-        toast.success('Movie added to watchlist!');
+        const success = await addToWatchlist(movie.id, movie.title, `https://image.tmdb.org/t/p/w500/${movie.poster_path}`);
+        if (success) {
+          setInWatchlist(true);
+          toast.success('Movie added to watchlist!');
+        } else {
+          toast.error('Failed to add movie to watchlist.');
+        }
       }
     } catch (error) {
       console.error('Failed to modify watchlist:', error);
@@ -121,29 +119,38 @@ const MovieInfo = ({ id: propId, onClose }) => {
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
+      const userId = localStorage.getItem('user_id');
+      if (!token || !userId) {
         toast.error('You must be logged in to submit a review.');
         return;
       }
 
-      const response = await axios.post('http://localhost:5000/api/reviews', {
-        user_id: localStorage.getItem('user_id'),
+      const reviewData = {
+        user_id: userId,
         movie_id: id,
         content: comment,
         recommendation,
         rating,
         movie_title: movie.title,
         thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      };
 
-      setReviews([...reviews, response.data]);
-      setComment('');
-      setRecommendation(null);
-      setRating(5);
+      console.log('Submitting review with data:', reviewData);
+
+      const response = await createReview(reviewData);
+
+      if (response) {
+        console.log('Review submitted successfully:', response);
+        setReviews([...reviews, response]);
+        setComment('');
+        setRecommendation(null);
+        setRating(5);
+
+        // Redirect to the reviews page
+        navigate('/homepage');
+      } else {
+        console.error('Failed to submit review');
+      }
     } catch (err) {
       console.error('Failed to submit comment', err.response ? err.response.data : err.message);
     }

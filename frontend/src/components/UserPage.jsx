@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import ModalWrapper from './ModalWrapper'; // Import the ModalWrapper component
+import MovieInfo from './MovieInfo'; // Import the MovieInfo component
 import './UserPage.css';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -8,7 +10,6 @@ const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
 
 const UserPage = () => {
   const { username } = useParams();
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -17,6 +18,8 @@ const UserPage = () => {
   const [topMovies, setTopMovies] = useState([]);
   const [upNext, setUpNext] = useState(null);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
 
   const defaultProfilePicture = 'https://cdn.pixabay.com/photo/2019/08/11/18/59/icon-4399701_1280.png'; // Default image URL
 
@@ -140,59 +143,14 @@ const UserPage = () => {
     }
   };
 
-  const handleMovieClick = async (movieId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return;
-      }
+  const openModal = (movieId) => {
+    setSelectedMovieId(movieId);
+    setIsModalOpen(true);
+  };
 
-      let movieResponse;
-      try {
-        // Check if the movie exists in the database
-        movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          // Fetch movie details from external API if not found in the database
-          const externalMovieResponse = await axios.get(`${BASE_URL}/movie/${movieId}`, {
-            params: {
-              api_key: API_KEY,
-            },
-          });
-
-          const movie = externalMovieResponse.data;
-
-          // Add the movie to the database
-          try {
-            await axios.post('http://localhost:5000/api/movies', {
-              id: movie.id,
-              title: movie.title,
-              thumbnail: `https://image.tmdb.org/t/p/w500/${movie.poster_path}`,
-            }, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            console.log('Movie added to the database:', movie);
-          } catch (postError) {
-            console.error('Failed to add movie to the database:', postError);
-          }
-        } else {
-          throw error;
-        }
-      }
-
-      // Navigate to the MovieInfo page
-      navigate(`/movie/${movieId}`);
-    } catch (error) {
-      console.error('Failed to handle movie click:', error);
-    }
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovieId(null);
   };
 
   if (error) return <div>{error}</div>;
@@ -213,7 +171,7 @@ const UserPage = () => {
           <div className="movie-row">
             {topMovies.length > 0 ? (
               topMovies.map((movie) => (
-                <div key={movie.id} className="movie-card" onClick={() => handleMovieClick(movie.id)}>
+                <div key={movie.id} className="movie-card" onClick={() => openModal(movie.id)}>
                   <img src={movie.thumbnail} alt={movie.title} />
                   <h3>{movie.title}</h3>
                 </div>
@@ -228,7 +186,7 @@ const UserPage = () => {
           <div className="movie-row">
             {recommendations.length > 0 ? (
               recommendations.map((movie) => (
-                <div key={movie.id} className="movie-card" onClick={() => handleMovieClick(movie.id)}>
+                <div key={movie.id} className="movie-card" onClick={() => openModal(movie.id)}>
                   <img src={movie.thumbnail} alt={movie.title} />
                   <h3>{movie.title}</h3>
                   <button onClick={(e) => { e.stopPropagation(); handleRemoveRecommendation(movie.id); }}>Remove</button>
@@ -243,7 +201,7 @@ const UserPage = () => {
           <div className="currently-watching">
             <h2>Currently Watching</h2>
             {currentlyWatching ? (
-              <div className="movie-card" onClick={() => handleMovieClick(currentlyWatching.movie_id)}>
+              <div className="movie-card" onClick={() => openModal(currentlyWatching.movie_id)}>
                 <img src={`https://image.tmdb.org/t/p/w500/${currentlyWatching.poster}`} alt={currentlyWatching.title} />
                 <h3>{currentlyWatching.title}</h3>
               </div>
@@ -254,7 +212,7 @@ const UserPage = () => {
           <div className="up-next">
             <h2>Up Next</h2>
             {upNext ? (
-              <div className="movie-card" onClick={() => handleMovieClick(upNext.movie_id)}>
+              <div className="movie-card" onClick={() => openModal(upNext.movie_id)}>
                 <img src={`https://image.tmdb.org/t/p/w500/${upNext.poster}`} alt={upNext.title} />
                 <h3>{upNext.title}</h3>
               </div>
@@ -281,6 +239,9 @@ const UserPage = () => {
             )}
         </div>
       </div>
+      <ModalWrapper isOpen={isModalOpen} onRequestClose={closeModal}>
+        {selectedMovieId && <MovieInfo id={selectedMovieId} onClose={closeModal} />}
+      </ModalWrapper>
     </div>
   );
 };

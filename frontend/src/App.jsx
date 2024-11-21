@@ -33,6 +33,17 @@ function App() {
     } else {
       console.log('No token or username found in localStorage');
     }
+
+    const handleBeforeUnload = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
   const handleLogin = (response) => {
@@ -68,9 +79,9 @@ function App() {
     <Router>
       <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} username={username} />
       <Routes>
-        <Route path="/" element={isLoggedIn ? <Homepage openModal={openModal} /> : <Navigate to="/login" />} />
-        <Route path="/login" element={<Login handleLogin={handleLogin} />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={isLoggedIn ? <Navigate to={`/user/${username}`} /> : <Navigate to="/login" />} />
+        <Route path="/login" element={isLoggedIn ? <Navigate to={`/user/${username}`} /> : <Login handleLogin={handleLogin} />} />
+        <Route path="/register" element={isLoggedIn ? <Navigate to={`/user/${username}`} /> : <Register />} />
         <Route path="/browse" element={isLoggedIn ? <Browse openModal={openModal} /> : <Navigate to="/login" />} />
         <Route path="/watchlist" element={isLoggedIn ? <Watchlist openModal={openModal} /> : <Navigate to="/login" />} />
         <Route path="/trending" element={isLoggedIn ? <TrendingMovies openModal={openModal} /> : <Navigate to="/login" />} />
@@ -80,7 +91,8 @@ function App() {
         <Route path="/view-user/:username" element={isLoggedIn ? <ViewUserPage /> : <Navigate to="/login" />} />
         <Route path="/view-users" element={isLoggedIn ? <ViewUsers /> : <Navigate to="/login" />} /> {/* Add the ViewUsers route */}
         <Route path="/edit-profile" element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />} /> {/* Add the EditProfile route */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/homepage" element={isLoggedIn ? <Homepage /> : <Navigate to="/login" />} /> {/* Add the Homepage route */}
+        <Route path="*" element={<Navigate to={isLoggedIn ? `/user/${username}` : "/login"} />} />
       </Routes>
       <ModalWrapper isOpen={isModalOpen} onRequestClose={closeModal}>
         {selectedMovieId && <MovieInfo id={selectedMovieId} onClose={closeModal} />}

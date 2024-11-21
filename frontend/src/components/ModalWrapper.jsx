@@ -29,9 +29,11 @@ const ModalWrapper = ({ isOpen, onRequestClose, children }) => {
                     width: '80%',
                     maxHeight: '90vh',
                     overflow: 'auto',
+                    zIndex: 10000, // High z-index value for modal content
                 },
                 overlay: {
                     backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    zIndex: 9999, // High z-index value for modal overlay
                 },
             }}
         >
