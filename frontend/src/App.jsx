@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Header from './components/Header';
 import Login from './components/Login';
 import MovieInfo from './components/MovieInfo';
-import Homepage from './components/Homepage';
 import Register from './components/Register';
 import Browse from './components/Browse';
 import Watchlist from './components/Watchlists';
@@ -91,7 +90,6 @@ function App() {
         <Route path="/view-user/:username" element={isLoggedIn ? <ViewUserPage /> : <Navigate to="/login" />} />
         <Route path="/view-users" element={isLoggedIn ? <ViewUsers /> : <Navigate to="/login" />} /> {/* Add the ViewUsers route */}
         <Route path="/edit-profile" element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />} /> {/* Add the EditProfile route */}
-        <Route path="/homepage" element={isLoggedIn ? <Homepage /> : <Navigate to="/login" />} /> {/* Add the Homepage route */}
         <Route path="*" element={<Navigate to={isLoggedIn ? `/user/${username}` : "/login"} />} />
       </Routes>
       <ModalWrapper isOpen={isModalOpen} onRequestClose={closeModal}>

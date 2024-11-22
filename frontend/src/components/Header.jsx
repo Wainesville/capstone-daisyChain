@@ -24,7 +24,6 @@ function Header({ isLoggedIn, handleLogout, username }) {
             <>
               <li><Link to="/browse" className="nav-link">Browse/Search</Link></li>
               <li><Link to="/watchlist" className="nav-link">Watchlist</Link></li>
-              <li><Link to="/homepage" className="nav-link">Reviews</Link></li> {/* Update this line */}
               <li><Link to="/trending" className="nav-link">Trending Movies</Link></li>
               <li><Link to="/upcoming" className="nav-link">Upcoming Movies</Link></li>
               <li><Link to={`/user/${username}`} className="nav-link">Profile</Link></li> {/* Link to user page */}

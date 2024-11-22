@@ -56,25 +56,6 @@ export const fetchMovieInfo = async (movieId) => {
   }
 };
 
-// Fetch Movie Reviews
-export const fetchMovieReviews = async (movieId) => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_SERVER_URL}/reviews/movie/${movieId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data; // Return the list of reviews for the movie
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return []; // Return an empty array if no reviews are found
-    }
-    console.error('Error fetching movie reviews:', error.response ? error.response.data : error.message);
-    return []; // Return an empty array if there's an error
-  }
-};
-
 // Add to Watchlist
 export const addToWatchlist = async (movieId, title, poster) => {
   const token = localStorage.getItem('token');
@@ -138,15 +119,13 @@ export const fetchWatchlist = async () => {
   }
 };
 
-
-
 // Remove from Watchlist
 export const removeFromWatchlist = async (movieId) => {
   const token = localStorage.getItem('token');
   if (!token) {
     console.error('No token found in localStorage');
     window.location.href = '/login'; // Redirect to login page
-    return;
+    return false;
   }
   try {
     await axios.delete(`${API_SERVER_URL}/watchlist/remove/${movieId}`, {
@@ -154,9 +133,18 @@ export const removeFromWatchlist = async (movieId) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    return true;
   } catch (error) {
-    console.error('Error removing movie from watchlist:', error);
-    throw error;
+    if (error.response && error.response.status === 403) {
+      console.error('Unauthorized: Invalid or expired token. Please log in again.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      window.location.href = '/login'; // Redirect to login page
+    } else {
+      console.error('Error removing from watchlist:', error.response ? error.response.data : error.message);
+    }
+    return false;
   }
 };
 
@@ -285,22 +273,6 @@ export const fetchWatchlistByUserId = async (userId) => {
   }
 };
 
-// Fetch User Reviews
-export const fetchUserReviews = async (userId) => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_SERVER_URL}/reviews/user/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching user reviews:', error);
-    throw error;
-  }
-};
-
 // Fetch Recommendations
 export const fetchRecommendations = async () => {
   const token = localStorage.getItem('token');
@@ -327,51 +299,5 @@ export const fetchRecommendations = async () => {
       console.error('Error fetching recommendations:', error.response ? error.response.data : error.message);
     }
     throw error;
-  }
-};
-
-// Create a Review
-export const createReview = async (reviewData) => {
-  const token = localStorage.getItem('token');
-
-  if (!token) {
-    console.error("No token found! Please log in.");
-    return false;
-  }
-
-  try {
-    const response = await axios.post(`${API_SERVER_URL}/reviews`, reviewData, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.status === 403) {
-      console.error('Unauthorized: Invalid or expired token. Please log in again.');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_id');
-      localStorage.removeItem('username');
-      window.location.href = '/login'; // Redirect to login page
-    } else {
-      console.error('Error creating review:', error.response ? error.response.data : error.message);
-    }
-    return false;
-  }
-};
-
-// Fetch All Reviews
-export const fetchAllReviews = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_SERVER_URL}/reviews`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching all reviews:', error);
-    return []; // Return an empty array if there's an error
   }
 };

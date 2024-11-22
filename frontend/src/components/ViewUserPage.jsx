@@ -12,7 +12,6 @@ const ViewUserPage = () => {
   const { username } = useParams();
   const [user, setUser] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
-  const [reviews, setReviews] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [currentlyWatching, setCurrentlyWatching] = useState(null);
   const [topMovies, setTopMovies] = useState([]);
@@ -48,13 +47,6 @@ const ViewUserPage = () => {
           },
         });
         setWatchlist(watchlistResponse.data);
-
-        const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/user/${userResponse.data.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setReviews(reviewsResponse.data);
 
         // Fetch recommendations details
         if (userResponse.data.recommendations && userResponse.data.recommendations.length > 0) {
@@ -220,23 +212,6 @@ const ViewUserPage = () => {
               <p>No movie up next</p>
             )}
           </div>
-        </div>
-      </div>
-      <div className="main-content">
-        <div className="reviews-section">
-          <h2>Reviews</h2>
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <div key={review.id} className="review-card">
-                <h3>{review.movie_title}</h3>
-                <img src={review.thumbnail} alt={`${review.movie_title} poster`} className="review-poster" />
-                <p className="review-content">{review.content.charAt(0).toUpperCase() + review.content.slice(1)}</p>
-                <span className="review-rating">{review.rating}/10</span>
-              </div>
-            ))
-          ) : (
-              <p>No reviews</p>
-            )}
         </div>
       </div>
       <ModalWrapper isOpen={isModalOpen} onRequestClose={closeModal}>

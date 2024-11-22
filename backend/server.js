@@ -18,7 +18,6 @@ const authRoutes = require('./routes/auth');
 const watchlistRoutes = require('./routes/watchlistRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const commentsRoutes = require('./routes/commentsRoutes');
-const reviewRoutes = require('./routes/reviewRoutes'); // Ensure reviewRoutes is imported
 const userRoutes = require('./routes/userRoutes'); // Ensure userRoutes is imported
 const recommendationRoutes = require('./routes/recommendationRoutes'); // Add this line
 
@@ -26,7 +25,6 @@ const recommendationRoutes = require('./routes/recommendationRoutes'); // Add th
 app.use('/api/auth', authRoutes);
 app.use('/api/watchlist', authenticate, watchlistRoutes); // Ensure authentication middleware is used
 app.use('/api/movies', movieRoutes);
-app.use('/api/reviews', authenticate, reviewRoutes); // Ensure reviewRoutes is used
 app.use('/api/comments', commentsRoutes);
 app.use('/api/users', userRoutes); // Ensure userRoutes is used
 app.use('/api/recommendations', authenticate, recommendationRoutes); // Add this line
