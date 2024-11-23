@@ -19,7 +19,7 @@ function TrendingMovies({ openModal }) {
   }, []); // Run only once on component mount
 
   return (
-    <div>
+    <div className="watchlist">
       <h2>Trending Movies</h2>
       <div className="movie-grid">
         {trendingMovies.map((movie) => (

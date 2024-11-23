@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ModalWrapper from './ModalWrapper'; // Import the ModalWrapper component
 import MovieInfo from './MovieInfo'; // Import the MovieInfo component
+import Badge from 'react-bootstrap/Badge'; // Import Badge from react-bootstrap
 import './UserPage.css';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -10,6 +11,7 @@ const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
 
 const UserPage = () => {
   const { username } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -145,6 +147,10 @@ const UserPage = () => {
     setSelectedMovieId(null);
   };
 
+  const handleEditProfile = () => {
+    navigate('/edit-profile');
+  };
+
   if (error) return <div>{error}</div>;
   if (!user) return <div>Loading...</div>;
 
@@ -155,6 +161,8 @@ const UserPage = () => {
         <div className="user-info">
           <h1>{user.username}</h1>
           <p className="user-bio">{user.bio}</p>
+          <p className="user-genres"><strong>Favorite Genres:</strong> {user.favorite_genres.join(', ')}</p>
+          <button onClick={handleEditProfile} className="edit-profile-button">Edit Profile</button>
         </div>
       </div>
       <div className="user-content">
@@ -162,8 +170,9 @@ const UserPage = () => {
           <h2>Top 5 Movies</h2>
           <div className="movie-row">
             {topMovies.length > 0 ? (
-              topMovies.map((movie) => (
+              topMovies.map((movie, index) => (
                 <div key={movie.id} className="movie-card" onClick={() => openModal(movie.id)}>
+                  <Badge pill bg="primary" className="movie-rank">{index + 1}</Badge>
                   <img src={movie.thumbnail} alt={movie.title} />
                   <h3>{movie.title}</h3>
                 </div>

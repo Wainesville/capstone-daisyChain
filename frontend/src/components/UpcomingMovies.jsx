@@ -19,7 +19,7 @@ function UpcomingMovies({ openModal }) {
   }, []); // Run only once on component mount
 
   return (
-    <div>
+    <div className="watchlist">
       <h2>Upcoming Movies</h2>
       <div className="movie-grid">
         {upcomingMovies.map((movie) => (

@@ -60,36 +60,100 @@ button:hover {
 
 /* Movie Grid */
 .movie-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsive grid */
-  gap: 15px; /* Space between movie cards */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Space between movie cards */
   width: 100%; /* Full width */
+  justify-content: center; /* Center align the movie cards */
 }
 
 /* Movie Card */
 .movie-card {
-  background-color: #fff; /* White background */
+  background-color: #292929; /* Dark background color for movie cards */
   border-radius: 8px; /* Rounded corners */
   overflow: hidden; /* Hide overflow */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
   transition: transform 0.3s; /* Animation for hover effect */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  text-align: center; /* Center align text */
+  position: relative; /* Add relative positioning for the rank label */
+  max-width: 200px; /* Set a max width for the movie cards */
 }
 
+/* Movie Card Hover Effect */
 .movie-card:hover {
   transform: translateY(-5px); /* Lift effect */
 }
 
+/* Movie Card Image */
 .movie-card img {
   width: 100%; /* Full width */
   height: auto; /* Maintain aspect ratio */
+  border-radius: 4px; /* Rounded corners for images */
+  margin-bottom: 10px;
 }
 
+/* Movie Title */
 .movie-card h3 {
-  padding: 10px; /* Space inside card */
   font-size: 1em; /* Normal font size */
-  color: #000; /* Black text */
-  text-align: center; /* Center title */
+  color: #ffffff; /* Light text color */
   margin-top: 10px; /* Add space between the title and the movie poster */
+  word-wrap: break-word; /* Ensure long titles wrap onto a second line */
+}
+
+/* Remove Button */
+.movie-card button {
+  background-color: #e74c3c; /* Red color */
+  color: white; /* White text */
+  border: none;
+  border-radius: 4px; /* Rounded corners */
+  padding: 8px; /* Padding inside */
+  cursor: pointer; /* Pointer on hover */
+  transition: background-color 0.3s; /* Smooth transition */
+  margin: 10px; /* Space around button */
+}
+
+/* Remove Button Hover Effect */
+.movie-card button:hover {
+  background-color: #c0392b; /* Darker red on hover */
+}
+
+/* Toggle Buttons */
+.toggle-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between buttons */
+}
+
+.toggle-button {
+  background-color: #007bff; /* Primary color */
+  color: white; /* White text */
+  border: none;
+  border-radius: 4px; /* Rounded corners */
+  padding: 8px; /* Padding inside */
+  cursor: pointer; /* Pointer on hover */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+.toggle-button.active {
+  background-color: #0056b3; /* Darker shade for active state */
+}
+
+.toggle-button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+/* First Spot Movie Card */
+.first-spot {
+  border: 3px solid #4caf50; /* Green border for first spot */
+}
+
+/* Second Spot Movie Card */
+.second-spot {
+  border: 3px solid #ff9800; /* Orange border for second spot */
 }
 
 /* Review Card */
@@ -148,3 +212,39 @@ button:hover {
 .recommendation-card a:hover {
   text-decoration: underline;
 }
+
+/* Browse Page */
+.browse-page {
+  padding: 20px;
+  background-color: black; /* Set background to black */
+  color: white; /* Set text color to white */
+  min-height: 100vh; /* Ensure it fills the viewport */
+}
+
+.browse-page h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.browse-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.genre-button {
+  background-color: #ff5e57;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.genre-button:hover {
+  background-color: #ff4a3d; /* Darker shade on hover */
+}
+

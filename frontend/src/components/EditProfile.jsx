@@ -1,49 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { fetchGenres } from '../api'; // Import the fetchGenres function
 import './EditProfile.css';
-import MovieCollage from './MovieCollage';
 
 function EditProfile() {
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [bio, setBio] = useState('');
-  const [favoriteGenres, setFavoriteGenres] = useState([]);
-  const [topMovies, setTopMovies] = useState(Array(5).fill(null));
-  const [searchResults, setSearchResults] = useState(Array(5).fill([]));
-  const [searchQueries, setSearchQueries] = useState(Array(5).fill(''));
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [profile, setProfile] = useState({
+    username: '',
+    profile_picture: '',
+    bio: '',
+    favorite_genres: [],
+    top_movies: [],
+  });
+  const [genres, setGenres] = useState([]);
+  const [topMoviesDetails, setTopMoviesDetails] = useState([]);
+  const [searchQueries, setSearchQueries] = useState(['', '', '', '', '']);
+  const [searchResults, setSearchResults] = useState([[], [], [], [], []]);
+  const navigate = useNavigate(); // Initialize the useNavigate hook
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) {
-          console.error('No token found in localStorage');
-          window.location.href = '/login'; // Redirect to login page
-          return;
-        }
-
-        const profileResponse = await axios.get('http://localhost:5000/api/users/profile', {
+        const response = await axios.get('http://localhost:5000/api/users/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        const { profile_picture, bio, favorite_genres, top_movies } = profileResponse.data;
-        setProfilePicture(profile_picture);
-        setBio(bio);
-        setFavoriteGenres(favorite_genres || []);
+        const topMovies = response.data.top_movies || [];
+        // Ensure there are always 5 slots for top movies
+        while (topMovies.length < 5) {
+          topMovies.push(null);
+        }
+        setProfile({
+          username: response.data.username || '',
+          profile_picture: response.data.profile_picture || '',
+          bio: response.data.bio || '',
+          favorite_genres: response.data.favorite_genres || [],
+          top_movies: topMovies,
+        });
 
-        // Ensure top_movies is defined and is an array
-        const topMoviesArray = Array.isArray(top_movies) ? top_movies : [];
-        
-        // Fetch details for top movies
-        const topMoviesDetails = await Promise.all(
-          topMoviesArray.map(async (movieId) => {
+        // Fetch movie details for top movies
+        const movieDetails = await Promise.all(
+          topMovies.map(async (movieId) => {
             if (movieId) {
-              const movieResponse = await axios.get(`http://localhost:5000/api/movies/${movieId}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
+              const movieResponse = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
+                params: {
+                  api_key: '8feb4db25b7185d740785fc6b6f0e850',
                 },
               });
               return movieResponse.data;
@@ -51,37 +56,53 @@ function EditProfile() {
             return null;
           })
         );
-        setTopMovies(topMoviesDetails.concat(Array(5 - topMoviesDetails.length).fill(null)));
+        setTopMoviesDetails(movieDetails);
       } catch (error) {
-        console.error('Failed to fetch profile data:', error);
-        setError('Failed to fetch profile data');
+        console.error('Error fetching user profile:', error);
       }
     };
 
-    fetchProfileData();
+    const loadGenres = async () => {
+      try {
+        const genreList = await fetchGenres();
+        setGenres(genreList);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    };
+
+    fetchProfile();
+    loadGenres();
   }, []);
 
-  const handleProfilePictureChange = (e) => {
-    setProfilePicture(e.target.files[0]);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prevProfile) => ({
+      ...prevProfile,
+      [name]: value,
+    }));
   };
 
-  const handleBioChange = (e) => {
-    setBio(e.target.value);
-  };
-
-  const handleFavoriteGenresChange = (e) => {
+  const handleGenreChange = (e) => {
     const { value, checked } = e.target;
-    if (checked) {
-      setFavoriteGenres([...favoriteGenres, value]);
-    } else {
-      setFavoriteGenres(favoriteGenres.filter((genre) => genre !== value));
-    }
+    setProfile((prevProfile) => {
+      const newFavoriteGenres = checked
+        ? [...prevProfile.favorite_genres, value]
+        : prevProfile.favorite_genres.filter((genre) => genre !== value);
+      return {
+        ...prevProfile,
+        favorite_genres: newFavoriteGenres,
+      };
+    });
   };
 
   const handleSearchChange = (index, e) => {
-    const newSearchQueries = [...searchQueries];
-    newSearchQueries[index] = e.target.value;
-    setSearchQueries(newSearchQueries);
+    const { value } = e.target;
+    setSearchQueries((prevQueries) => {
+      const newQueries = [...prevQueries];
+      newQueries[index] = value;
+      return newQueries;
+    });
   };
 
   const handleSearchSubmit = async (index, e) => {
@@ -93,133 +114,151 @@ function EditProfile() {
           query: searchQueries[index],
         },
       });
-      const newSearchResults = [...searchResults];
-      newSearchResults[index] = response.data.results;
-      setSearchResults(newSearchResults);
+      setSearchResults((prevResults) => {
+        const newResults = [...prevResults];
+        newResults[index] = response.data.results;
+        return newResults;
+      });
     } catch (error) {
-      console.error('Failed to search movies:', error);
-      setError('Failed to search movies');
+      console.error('Error searching for movies:', error);
     }
   };
 
   const handleTopMoviesChange = (index, movie) => {
-    const newTopMovies = [...topMovies];
-    newTopMovies[index] = movie;
-    setTopMovies(newTopMovies);
+    setProfile((prevProfile) => {
+      const newTopMovies = [...prevProfile.top_movies];
+      if (movie) {
+        newTopMovies[index] = movie.id;
+      } else {
+        newTopMovies[index] = null;
+      }
+      return {
+        ...prevProfile,
+        top_movies: newTopMovies,
+      };
+    });
 
-    // Clear the search results for the selected index
-    const newSearchResults = [...searchResults];
-    newSearchResults[index] = [];
-    setSearchResults(newSearchResults);
+    setTopMoviesDetails((prevDetails) => {
+      const newDetails = [...prevDetails];
+      if (movie) {
+        newDetails[index] = movie;
+      } else {
+        newDetails[index] = null;
+      }
+      return newDetails;
+    });
 
-    // Clear the search query for the selected index
-    const newSearchQueries = [...searchQueries];
-    newSearchQueries[index] = '';
-    setSearchQueries(newSearchQueries);
+    // Clear the search results for the corresponding index
+    setSearchResults((prevResults) => {
+      const newResults = [...prevResults];
+      newResults[index] = [];
+      return newResults;
+    });
+
+    // Clear the search query for the corresponding index
+    setSearchQueries((prevQueries) => {
+      const newQueries = [...prevQueries];
+      newQueries[index] = '';
+      return newQueries;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        window.location.href = '/login'; // Redirect to login page
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('profile_picture', profilePicture);
-      formData.append('bio', bio);
-      formData.append('favorite_genres', JSON.stringify(favoriteGenres));
-      formData.append('top_movies', JSON.stringify(topMovies.map((movie) => movie?.id)));
-
-      await axios.put('http://localhost:5000/api/users/profile', formData, {
+      await axios.put('http://localhost:5000/api/users/profile', profile, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
         },
       });
-
-      navigate(`/user/${localStorage.getItem('username')}`);
+      toast.success('Profile updated successfully');
+      navigate(`/user/${profile.username}`); // Navigate to the UserPage after saving changes
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      setError('Failed to update profile');
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
     }
   };
 
-  if (error) return <div>{error}</div>;
-
   return (
     <div className="edit-profile">
-      <MovieCollage />
-      <div className="form-container">
-        <h2>Edit Profile</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="profilePicture">Profile Picture</label>
-            <input type="file" id="profilePicture" onChange={handleProfilePictureChange} />
-            {profilePicture && (
-              <img src={URL.createObjectURL(profilePicture)} alt="Profile Picture" />
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="bio">Bio</label>
-            <textarea id="bio" value={bio} onChange={handleBioChange} />
-          </div>
-          <div className="form-group">
-            <label>Favorite Genres</label>
-            <div className="genres">
-              {['Action', 'Comedy', 'Drama', 'Horror', 'Romance', 'Sci-Fi'].map((genre) => (
-                <div key={genre}>
-                  <input
-                    type="checkbox"
-                    id={genre}
-                    value={genre}
-                    checked={favoriteGenres.includes(genre)}
-                    onChange={handleFavoriteGenresChange}
-                  />
-                  <label htmlFor={genre}>{genre}</label>
-                </div>
-              ))}
+      <ToastContainer />
+      <h2>Edit Profile</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Profile Picture URL</label>
+          <input
+            type="text"
+            name="profile_picture"
+            value={profile.profile_picture || ''}
+            onChange={handleInputChange}
+          />
+          {profile.profile_picture && (
+            <div className="profile-picture-preview">
+              <img src={profile.profile_picture} alt="Profile" />
             </div>
-          </div>
-          <div className="form-group">
-            <label>Top 5 Movies</label>
-            {topMovies.map((movie, index) => (
-              <div key={index} className="top-movie">
-                <div className="search-form">
-                  <input
-                    type="text"
-                    value={searchQueries[index]}
-                    onChange={(e) => handleSearchChange(index, e)}
-                    placeholder={`Search for movie ${index + 1}`}
-                  />
-                  <button type="button" onClick={(e) => handleSearchSubmit(index, e)}>Search</button>
-                </div>
-                <div className="search-results">
-                  {searchResults[index].map((result) => (
-                    <div key={result.id} className="search-result">
-                      <img src={`https://image.tmdb.org/t/p/w200/${result.poster_path}`} alt={result.title} />
-                      <button type="button" onClick={() => handleTopMoviesChange(index, result)}>
-                        {topMovies[index]?.id === result.id ? 'Remove' : 'Add'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                {movie && (
-                  <div className="selected-movie">
-                    <img src={`https://image.tmdb.org/t/p/w200/${movie.poster_path}`} alt={movie.title} />
-                    <span>{index + 1}. {movie.title}</span>
-                    <button type="button" onClick={() => handleTopMoviesChange(index, null)}>Remove</button>
-                  </div>
-                )}
+          )}
+        </div>
+        <div className="form-group">
+          <label>Bio</label>
+          <textarea
+            name="bio"
+            value={profile.bio || ''}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="form-group">
+          <label>Favorite Genres</label>
+          <div className="genres">
+            {genres.map((genre) => (
+              <div key={genre.id}>
+                <input
+                  type="checkbox"
+                  id={`genre-${genre.id}`}
+                  value={genre.name}
+                  checked={profile.favorite_genres.includes(genre.name)}
+                  onChange={handleGenreChange}
+                />
+                <label htmlFor={`genre-${genre.id}`}>{genre.name}</label>
               </div>
             ))}
           </div>
-          <button type="submit">Save Changes</button>
-        </form>
-      </div>
+        </div>
+        <div className="form-group">
+          <label>Top 5 Movies</label>
+          {profile.top_movies.map((movieId, index) => (
+            <div key={index} className="top-movie">
+              <div className="search-form">
+                <input
+                  type="text"
+                  value={searchQueries[index] || ''}
+                  onChange={(e) => handleSearchChange(index, e)}
+                  placeholder={`Search for movie ${index + 1}`}
+                />
+                <button type="button" onClick={(e) => handleSearchSubmit(index, e)}>Search</button>
+              </div>
+              <div className="search-results">
+                {searchResults[index].map((result) => (
+                  <div key={result.id} className="search-result">
+                    <img src={`https://image.tmdb.org/t/p/w200/${result.poster_path}`} alt={result.title} />
+                    <button type="button" onClick={() => handleTopMoviesChange(index, result)}>
+                      {profile.top_movies.includes(result.id) ? 'Remove' : 'Add'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {topMoviesDetails[index] && (
+                <div className="selected-movie">
+                  <img src={`https://image.tmdb.org/t/p/w200/${topMoviesDetails[index].poster_path}`} alt={topMoviesDetails[index].title} />
+                  <span>{index + 1}. {topMoviesDetails[index].title}</span>
+                  <button type="button" onClick={() => handleTopMoviesChange(index, null)}>Remove</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <button type="submit">Save Changes</button>
+      </form>
     </div>
   );
 }

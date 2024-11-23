@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import ModalWrapper from './ModalWrapper'; // Import the ModalWrapper component
 import MovieInfo from './MovieInfo'; // Import the MovieInfo component
-import './UserPage.css';
+import Badge from 'react-bootstrap/Badge'; // Import Badge from react-bootstrap
+import './UserPage.css'; // Reuse the UserPage.css styles
 
 const BASE_URL = 'https://api.themoviedb.org/3';
 const API_KEY = '8feb4db25b7185d740785fc6b6f0e850';
@@ -110,31 +111,6 @@ const ViewUserPage = () => {
     fetchUserData();
   }, [username]);
 
-  const handleRemoveRecommendation = async (movieId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return;
-      }
-
-      await axios.post('http://localhost:5000/api/recommendations/remove', {
-        movieId,
-        userId: user.id,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Update the recommendations state
-      setRecommendations(recommendations.filter(movie => movie.id !== movieId));
-      console.log('Recommendation removed successfully');
-    } catch (error) {
-      console.error('Failed to remove recommendation:', error);
-    }
-  };
-
   const openModal = (movieId) => {
     setSelectedMovieId(movieId);
     setIsModalOpen(true);
@@ -149,12 +125,13 @@ const ViewUserPage = () => {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div className="view-user-page">
+    <div className="user-page">
       <div className="user-header">
         <img src={user.profile_picture || defaultProfilePicture} alt={`${user.username}'s profile`} className="user-image" />
         <div className="user-info">
           <h1>{user.username}</h1>
           <p className="user-bio">{user.bio}</p>
+          <p className="user-genres"><strong>Favorite Genres:</strong> {user.favorite_genres.join(', ')}</p>
         </div>
       </div>
       <div className="user-content">
@@ -162,8 +139,9 @@ const ViewUserPage = () => {
           <h2>Top 5 Movies</h2>
           <div className="movie-row">
             {topMovies.length > 0 ? (
-              topMovies.map((movie) => (
+              topMovies.map((movie, index) => (
                 <div key={movie.id} className="movie-card" onClick={() => openModal(movie.id)}>
+                  <Badge pill bg="primary" className="movie-rank">{index + 1}</Badge>
                   <img src={movie.thumbnail} alt={movie.title} />
                   <h3>{movie.title}</h3>
                 </div>
@@ -181,7 +159,6 @@ const ViewUserPage = () => {
                 <div key={movie.id} className="movie-card" onClick={() => openModal(movie.id)}>
                   <img src={movie.thumbnail} alt={movie.title} />
                   <h3>{movie.title}</h3>
-                  <button onClick={(e) => { e.stopPropagation(); handleRemoveRecommendation(movie.id); }}>Remove</button>
                 </div>
               ))
             ) : (

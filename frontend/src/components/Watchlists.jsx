@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import './styles.css';
+import './Watchlists.css'; // Ensure the correct CSS file is imported
 
 function Watchlist() {
   const [watchlist, setWatchlist] = useState([]);
+  const [currentlyWatching, setCurrentlyWatching] = useState(null);
+  const [nextUp, setNextUp] = useState(null);
 
   useEffect(() => {
     const loadWatchlist = async () => {
@@ -51,21 +53,15 @@ function Watchlist() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setWatchlist((prevWatchlist) => {
-        const updatedWatchlist = [...prevWatchlist];
-        const currentIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
-        const firstIndex = updatedWatchlist.findIndex((movie) => movie.currently_watching);
 
-        if (currentIndex !== -1 && firstIndex !== -1 && currentIndex !== firstIndex) {
-          // Swap the positions of the selected movie and the first movie
-          [updatedWatchlist[currentIndex], updatedWatchlist[firstIndex]] = [updatedWatchlist[firstIndex], updatedWatchlist[currentIndex]];
+      const selectedMovie = watchlist.find((movie) => movie.movie_id === movieId);
+      if (selectedMovie) {
+        setWatchlist(watchlist.filter((movie) => movie.movie_id !== movieId));
+        if (currentlyWatching) {
+          setWatchlist((prevWatchlist) => [...prevWatchlist, currentlyWatching]);
         }
-
-        return updatedWatchlist.map((movie, index) => ({
-          ...movie,
-          currently_watching: index === 0,
-        }));
-      });
+        setCurrentlyWatching(selectedMovie);
+      }
     } catch (error) {
       console.error('Failed to set currently watching:', error);
     }
@@ -79,21 +75,15 @@ function Watchlist() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setWatchlist((prevWatchlist) => {
-        const updatedWatchlist = [...prevWatchlist];
-        const currentIndex = updatedWatchlist.findIndex((movie) => movie.movie_id === movieId);
-        const secondIndex = updatedWatchlist.findIndex((movie) => movie.next_up);
 
-        if (currentIndex !== -1 && secondIndex !== -1 && currentIndex !== secondIndex) {
-          // Swap the positions of the selected movie and the second movie
-          [updatedWatchlist[currentIndex], updatedWatchlist[secondIndex]] = [updatedWatchlist[secondIndex], updatedWatchlist[currentIndex]];
+      const selectedMovie = watchlist.find((movie) => movie.movie_id === movieId);
+      if (selectedMovie) {
+        setWatchlist(watchlist.filter((movie) => movie.movie_id !== movieId));
+        if (nextUp) {
+          setWatchlist((prevWatchlist) => [...prevWatchlist, nextUp]);
         }
-
-        return updatedWatchlist.map((movie, index) => ({
-          ...movie,
-          next_up: index === 1,
-        }));
-      });
+        setNextUp(selectedMovie);
+      }
     } catch (error) {
       console.error('Failed to set next up:', error);
     }
@@ -103,8 +93,26 @@ function Watchlist() {
     <div className="watchlist">
       <h2>Your Watchlist</h2>
       <div className="movie-grid">
-        {watchlist.map((movie, index) => (
-          <div key={movie.movie_id} className={`movie-card ${index === 0 ? 'first-spot' : ''} ${index === 1 ? 'second-spot' : ''}`}>
+        {currentlyWatching && (
+          <div className="movie-card first-spot">
+            <Link to={`/movie/${currentlyWatching.movie_id}`}>
+              <img src={`https://image.tmdb.org/t/p/w500/${currentlyWatching.poster}`} alt={currentlyWatching.title} />
+              <h3>{currentlyWatching.title}</h3>
+            </Link>
+            <button onClick={() => handleSetCurrentlyWatching(currentlyWatching.movie_id)}>Remove from Currently Watching</button>
+          </div>
+        )}
+        {nextUp && (
+          <div className="movie-card second-spot">
+            <Link to={`/movie/${nextUp.movie_id}`}>
+              <img src={`https://image.tmdb.org/t/p/w500/${nextUp.poster}`} alt={nextUp.title} />
+              <h3>{nextUp.title}</h3>
+            </Link>
+            <button onClick={() => handleSetNextUp(nextUp.movie_id)}>Remove from Next Up</button>
+          </div>
+        )}
+        {watchlist.map((movie) => (
+          <div key={movie.movie_id} className="movie-card">
             <Link to={`/movie/${movie.movie_id}`}>
               <img src={`https://image.tmdb.org/t/p/w500/${movie.poster}`} alt={movie.title} />
               <h3>{movie.title}</h3>
@@ -112,13 +120,13 @@ function Watchlist() {
             <button onClick={() => handleRemove(movie.movie_id)}>Remove</button>
             <div className="toggle-buttons">
               <button
-                className={`toggle-button ${movie.currently_watching ? 'active' : ''}`}
+                className={`toggle-button ${currentlyWatching && currentlyWatching.movie_id === movie.movie_id ? 'active' : ''}`}
                 onClick={() => handleSetCurrentlyWatching(movie.movie_id)}
               >
                 Currently Watching
               </button>
               <button
-                className={`toggle-button ${movie.next_up ? 'active' : ''}`}
+                className={`toggle-button ${nextUp && nextUp.movie_id === movie.movie_id ? 'active' : ''}`}
                 onClick={() => handleSetNextUp(movie.movie_id)}
               >
                 Next Up

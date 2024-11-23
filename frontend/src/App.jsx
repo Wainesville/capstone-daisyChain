@@ -14,7 +14,9 @@ import ViewUserPage from './components/ViewUserPage'; // Import the ViewUserPage
 import ViewUsers from './components/ViewUsers'; // Import the ViewUsers component
 import ModalWrapper from './components/ModalWrapper'; // Import the ModalWrapper component
 
-import './App.css';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './components/styles.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
